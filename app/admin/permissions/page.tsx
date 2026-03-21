@@ -8,16 +8,15 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription
 } from "@/components/ui/dialog"
 import {
   Shield, Users, Search, CheckCircle, Lock, Unlock, Settings,
-  Eye, FileText, BarChart3, MessageSquare, Heart, DollarSign,
+  FileText, BarChart3, MessageSquare, Heart, DollarSign,
   Calendar, BookOpen, Star, Radio, MapPin, GraduationCap, Mail,
-  Church, Plus, Pencil, X,
+  Church, Pencil, X, Crown, AlertCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -128,15 +127,16 @@ type UserRecord = {
   role: string
   permissions: string[]
   active: boolean
+  isAdmin: boolean
 }
 
 const sampleUsers: UserRecord[] = [
-  { id: 1, name: "Admin User", email: "admin@church.org", role: "Super Admin", permissions: allPermKeys, active: true },
-  { id: 2, name: "Ptr. Julio Coyoy", email: "julio@abcmi.org", role: "Pastor", permissions: rolePresets.Pastor, active: true },
-  { id: 3, name: "Ptr. Fhey Coyoy", email: "fhey@abcmi.org", role: "Pastor", permissions: rolePresets.Pastor, active: true },
-  { id: 4, name: "Josie Perilla", email: "josie@abcmi.org", role: "Ministry Leader", permissions: rolePresets["Ministry Leader"], active: true },
-  { id: 5, name: "Treasurer Santos", email: "treasurer@abcmi.org", role: "Treasurer", permissions: rolePresets.Treasurer, active: true },
-  { id: 6, name: "John Member", email: "john@example.com", role: "Volunteer", permissions: rolePresets.Volunteer, active: true },
+  { id: 1, name: "Admin User", email: "admin@church.org", role: "Super Admin", permissions: allPermKeys, active: true, isAdmin: true },
+  { id: 2, name: "Ptr. Julio Coyoy", email: "julio@abcmi.org", role: "Pastor", permissions: rolePresets.Pastor, active: true, isAdmin: true },
+  { id: 3, name: "Ptr. Fhey Coyoy", email: "fhey@abcmi.org", role: "Pastor", permissions: rolePresets.Pastor, active: true, isAdmin: true },
+  { id: 4, name: "Josie Perilla", email: "josie@abcmi.org", role: "Ministry Leader", permissions: rolePresets["Ministry Leader"], active: true, isAdmin: false },
+  { id: 5, name: "Treasurer Santos", email: "treasurer@abcmi.org", role: "Treasurer", permissions: rolePresets.Treasurer, active: true, isAdmin: false },
+  { id: 6, name: "John Member", email: "john@example.com", role: "Member", permissions: [], active: true, isAdmin: false },
 ]
 
 function getInitials(name: string) {
@@ -231,11 +231,57 @@ function PermissionEditor({ user, onSave, onClose }: {
   )
 }
 
+// ── Promote Dialog ───────────────────────────────────────────────────────────
+function PromoteDialog({ user, onPromote, onClose }: {
+  user: UserRecord
+  onPromote: (id: number) => void
+  onClose: () => void
+}) {
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Crown className="w-5 h-5 text-amber-500" />
+          Promote to Admin
+        </DialogTitle>
+        <DialogDescription>
+          You are about to promote <strong>{user.name}</strong> to an administrative role.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="py-4">
+        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+          <div className="text-sm text-amber-900">
+            <p className="font-semibold mb-1">Important:</p>
+            <p>Once promoted, this user will be able to access the admin dashboard and manage church data. You can grant specific permissions after promotion.</p>
+          </div>
+        </div>
+        <div className="space-y-2 text-sm">
+          <p className="font-semibold text-foreground">After promotion:</p>
+          <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-2">
+            <li>User gains access to the admin dashboard</li>
+            <li>You can assign specific permissions in the next step</li>
+            <li>You can revoke admin status anytime</li>
+          </ul>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button className="bg-amber-500 hover:bg-amber-600 text-white gap-2"
+          onClick={() => { onPromote(user.id); onClose() }}>
+          <Crown className="w-4 h-4" /> Promote to Admin
+        </Button>
+      </DialogFooter>
+    </>
+  )
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminPermissionsPage() {
   const [users, setUsers] = useState<UserRecord[]>(sampleUsers)
   const [search, setSearch] = useState("")
   const [editTarget, setEditTarget] = useState<UserRecord | null>(null)
+  const [promoteTarget, setPromoteTarget] = useState<UserRecord | null>(null)
 
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -251,6 +297,13 @@ export default function AdminPermissionsPage() {
     setUsers(p => p.map(u => u.id === id ? { ...u, active: !u.active } : u))
   }
 
+  function promoteToAdmin(id: number) {
+    setUsers(p => p.map(u => u.id === id ? { ...u, isAdmin: true, role: "Pastor" } : u))
+    // Auto-open permission editor after promotion
+    const user = users.find(u => u.id === id)
+    if (user) setEditTarget({ ...user, isAdmin: true, role: "Pastor" })
+  }
+
   return (
     <DashboardLayout variant="admin" title="Permissions">
       <main className="p-6">
@@ -258,7 +311,7 @@ export default function AdminPermissionsPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">User Permissions</h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              Grant or revoke feature access for any user in the system.
+              Promote members to admin roles and grant feature access.
             </p>
           </div>
         </div>
@@ -267,8 +320,8 @@ export default function AdminPermissionsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
             { label: "Total Users", value: users.length, icon: Users, color: "text-[var(--church-primary)]" },
-            { label: "Super Admins", value: users.filter(u => u.role === "Super Admin").length, icon: Shield, color: "text-rose-500" },
-            { label: "Pastors", value: users.filter(u => u.role === "Pastor").length, icon: Church, color: "text-emerald-600" },
+            { label: "Admins", value: users.filter(u => u.isAdmin).length, icon: Crown, color: "text-amber-500" },
+            { label: "Members", value: users.filter(u => !u.isAdmin).length, icon: Users, color: "text-gray-500" },
             { label: "Active", value: users.filter(u => u.active).length, icon: CheckCircle, color: "text-green-600" },
           ].map(s => (
             <Card key={s.label}>
@@ -320,9 +373,15 @@ export default function AdminPermissionsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
                       <p className="font-semibold text-foreground">{u.name}</p>
-                      <Badge className={cn("text-xs border-none", u.role === "Super Admin" ? "bg-rose-100 text-rose-700" : u.role === "Pastor" ? "bg-[var(--church-primary)]/10 text-[var(--church-primary)]" : "bg-gray-100 text-gray-600")}>
-                        {u.role}
-                      </Badge>
+                      {u.isAdmin ? (
+                        <Badge className="text-xs border-none bg-amber-100 text-amber-700 gap-1">
+                          <Crown className="w-3 h-3" /> {u.role}
+                        </Badge>
+                      ) : (
+                        <Badge className="text-xs border-none bg-gray-100 text-gray-600">
+                          {u.role}
+                        </Badge>
+                      )}
                       {!u.active && <Badge className="text-xs border-none bg-gray-100 text-gray-500">Inactive</Badge>}
                     </div>
                     <p className="text-sm text-muted-foreground">{u.email}</p>
@@ -344,26 +403,45 @@ export default function AdminPermissionsPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Button size="sm" variant="outline" className="gap-1.5"
-                      onClick={() => toggleActive(u.id)}>
-                      {u.active ? <><Lock className="w-3.5 h-3.5" /> Deactivate</> : <><Unlock className="w-3.5 h-3.5" /> Activate</>}
-                    </Button>
-                    <Dialog open={editTarget?.id === u.id} onOpenChange={open => !open && setEditTarget(null)}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white gap-1.5"
-                          onClick={() => setEditTarget(u)}>
-                          <Pencil className="w-3.5 h-3.5" /> Edit Permissions
+                    {!u.isAdmin && (
+                      <Dialog open={promoteTarget?.id === u.id} onOpenChange={open => !open && setPromoteTarget(null)}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white gap-1.5"
+                            onClick={() => setPromoteTarget(u)}>
+                            <Crown className="w-3.5 h-3.5" /> Promote
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          {promoteTarget?.id === u.id && (
+                            <PromoteDialog user={promoteTarget} onPromote={promoteToAdmin} onClose={() => setPromoteTarget(null)} />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                    {u.isAdmin && (
+                      <>
+                        <Button size="sm" variant="outline" className="gap-1.5"
+                          onClick={() => toggleActive(u.id)}>
+                          {u.active ? <><Lock className="w-3.5 h-3.5" /> Deactivate</> : <><Unlock className="w-3.5 h-3.5" /> Activate</>}
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh]">
-                        <DialogHeader>
-                          <DialogTitle>Edit Permissions — {u.name}</DialogTitle>
-                        </DialogHeader>
-                        {editTarget?.id === u.id && (
-                          <PermissionEditor user={editTarget} onSave={savePermissions} onClose={() => setEditTarget(null)} />
-                        )}
-                      </DialogContent>
-                    </Dialog>
+                        <Dialog open={editTarget?.id === u.id} onOpenChange={open => !open && setEditTarget(null)}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white gap-1.5"
+                              onClick={() => setEditTarget(u)}>
+                              <Pencil className="w-3.5 h-3.5" /> Edit Permissions
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[90vh]">
+                            <DialogHeader>
+                              <DialogTitle>Edit Permissions — {u.name}</DialogTitle>
+                            </DialogHeader>
+                            {editTarget?.id === u.id && (
+                              <PermissionEditor user={editTarget} onSave={savePermissions} onClose={() => setEditTarget(null)} />
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
