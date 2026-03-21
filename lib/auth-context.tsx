@@ -43,12 +43,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient()
 
   async function loadProfile(supabaseUser: User) {
+    const meta = supabaseUser.user_metadata
+    const isOAuth = supabaseUser.app_metadata?.provider === 'google'
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('name, role, avatar_url')
       .eq('id', supabaseUser.id)
       .single()
-    setUser(toAppUser(supabaseUser, profile))
+
+    // Sync Google profile data on every OAuth login
+    if (isOAuth) {
+      const updates = {
+        id: supabaseUser.id,
+        email: supabaseUser.email,
+        name: meta?.full_name ?? meta?.name ?? profile?.name,
+        avatar_url: meta?.avatar_url ?? meta?.picture ?? profile?.avatar_url,
+        role: profile?.role ?? 'member',
+      }
+      await supabase.from('profiles').upsert(updates)
+      setUser(toAppUser(supabaseUser, { ...profile, ...updates }))
+    } else {
+      setUser(toAppUser(supabaseUser, profile))
+    }
   }
 
   useEffect(() => {
