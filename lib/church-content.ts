@@ -15,12 +15,12 @@ export const churchContent = {
   },
 
   coreValues: [
-    { title: "God First", description: "We place God above all things in every decision and pursuit of the ministry." },
-    { title: "Lordship of Christ", description: "We submit to the supreme authority of Jesus Christ as Lord of our lives and ministry." },
-    { title: "Faithful Service", description: "We are committed to serving God and His people with dedication, humility, and excellence." },
-    { title: "Holy Spirit Driven", description: "We depend on the Holy Spirit for guidance, power, and direction in all we do." },
-    { title: "Transformative Discipleship", description: "We make disciples who are transformed by the Word and empowered to transform others." },
-    { title: "Local and Global Missions", description: "We are called to plant churches and spread the Gospel both locally and to the nations." },
+    { title: "God First" },
+    { title: "Lordship of Christ" },
+    { title: "Faithful Service" },
+    { title: "Holy Spirit Driven" },
+    { title: "Transformative Discipleship" },
+    { title: "Local and Global Missions" },
   ],
 
   statementOfFaith: {

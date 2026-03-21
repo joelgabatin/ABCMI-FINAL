@@ -13,7 +13,7 @@ export async function GET() {
   const supabase = adminClient()
 
   const [settingsRes, coreValuesRes, beliefsRes, historyRes] = await Promise.all([
-    supabase.from('"church_VMD"').select('*').eq('id', 1).single(),
+    supabase.from('church_VMD').select('*').eq('id', 1).single(),
     supabase.from('church_core_values').select('*').order('sort_order'),
     supabase.from('church_beliefs').select('*').order('sort_order'),
     supabase.from('church_history').select('*').order('sort_order'),
@@ -25,30 +25,18 @@ export async function GET() {
   const history    = historyRes.data
 
   return NextResponse.json({
-    mission: {
-      ...staticContent.mission,
-      body: settings?.mission_body || staticContent.mission.body,
-    },
-    vision: {
-      ...staticContent.vision,
-      body: settings?.vision_body || staticContent.vision.body,
-      drivingForce: settings?.driving_force || staticContent.vision.drivingForce,
-    },
+    mission:      settings?.mission_body  || staticContent.mission.body,
+    vision:       settings?.vision_body   || staticContent.vision.body,
+    drivingForce: settings?.driving_force || staticContent.vision.drivingForce,
     coreValues: coreValues?.length
-      ? coreValues.map(cv => ({ title: cv.title, description: cv.description }))
-      : staticContent.coreValues,
-    statementOfFaith: {
-      ...staticContent.statementOfFaith,
-      beliefs: beliefs?.length
-        ? beliefs.map(b => b.belief)
-        : staticContent.statementOfFaith.beliefs,
-    },
-    history: {
-      ...staticContent.history,
-      timeline: history?.length
-        ? history.map(h => ({ year: h.year, event: h.event }))
-        : staticContent.history.timeline,
-    },
+      ? coreValues.map(cv => ({ id: cv.id, title: cv.title }))
+      : staticContent.coreValues.map(cv => ({ id: null, title: cv.title })),
+    beliefs: beliefs?.length
+      ? beliefs.map(b => ({ id: b.id, belief: b.belief }))
+      : staticContent.statementOfFaith.beliefs.map(b => ({ id: null, belief: b })),
+    history: history?.length
+      ? history.map(h => ({ id: h.id, year: h.year, event: h.event }))
+      : staticContent.history.timeline.map(h => ({ id: null, ...h })),
   })
 }
 
@@ -58,7 +46,7 @@ export async function PUT(req: Request) {
 
   // 1. Upsert mission / vision / driving force
   const { error: settingsErr } = await supabase
-    .from('"church_VMD"')
+    .from('church_VMD')
     .upsert({
       id: 1,
       mission_body:  body.mission?.body   ?? '',
@@ -72,10 +60,9 @@ export async function PUT(req: Request) {
   await supabase.from('church_core_values').delete().gte('id', 0)
   if (body.coreValues?.length) {
     const { error } = await supabase.from('church_core_values').insert(
-      body.coreValues.map((cv: { title: string; description: string }, i: number) => ({
-        title:       cv.title,
-        description: cv.description,
-        sort_order:  i,
+      body.coreValues.map((cv: { title: string }, i: number) => ({
+        title:      cv.title,
+        sort_order: i,
       }))
     )
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
