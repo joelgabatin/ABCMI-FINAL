@@ -13,7 +13,8 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  Settings
+  Settings,
+  BookOpen
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

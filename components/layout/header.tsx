@@ -22,7 +22,24 @@ const navigation = [
       { name: "Pastoral Team", href: "/pastoral-team" },
     ],
   },
-  { name: "Ministries", href: "/ministries" },
+  {
+    name: "Ministries",
+    href: "/ministries",
+    children: [
+      { name: "All Ministries", href: "/ministries" },
+      { name: "Music Ministry", href: "/ministries/music-ministry" },
+      { name: "Dance Ministry", href: "/ministries/dance-ministry" },
+      { name: "Youth Ministry", href: "/ministries/youth-ministry" },
+      { name: "Women's Ministry", href: "/ministries/womens-ministry" },
+      { name: "Men's Ministry", href: "/ministries/mens-ministry" },
+      { name: "Children's Ministry", href: "/ministries/childrens-ministry" },
+      { name: "Missions & Evangelism", href: "/ministries/missions-evangelism" },
+      { name: "Discipleship Group", href: "/ministries/discipleship-group" },
+      { name: "Singles & Adults (SAM)", href: "/ministries/singles-adults-ministry" },
+      { name: "Health Ministry", href: "/ministries/health-ministry" },
+      { name: "Counseling Ministry", href: "/ministries/counseling-ministry" },
+    ],
+  },
   {
     name: "Services",
     href: "/services",
@@ -41,7 +58,16 @@ const navigation = [
       { name: "Feedback & Testimony", href: "/feedback" },
     ],
   },
-  { name: "Events", href: "/events" },
+  { name: "Watch Us", href: "/live" },
+  {
+    name: "Events",
+    href: "/events/upcoming",
+    children: [
+      { name: "Upcoming Events", href: "/events/upcoming" },
+      { name: "Past Activities", href: "/events/past" },
+      { name: "News & Blog", href: "/events/news" },
+    ],
+  },
   { name: "Donate", href: "/donate" },
 ]
 
