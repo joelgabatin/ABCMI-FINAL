@@ -24,7 +24,8 @@ import {
   Star,
   MapPin,
   Clock,
-  Shield
+  Shield,
+  Radio
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -60,6 +61,8 @@ const adminNavItems = [
   { title: 'Feedback', icon: MessageSquarePlus, href: '/admin/feedback' },
   { title: 'Bible Study', icon: BookOpen, href: '/admin/bible-study' },
   { title: 'Daily Devotion', icon: BookMarked, href: '/admin/devotion' },
+  { title: 'Facebook Live', icon: Radio, href: '/admin/live' },
+  { title: 'Ministries', icon: Church, href: '/admin/ministries' },
   { title: 'Branches', icon: MapPin, href: '/admin/branches' },
   { title: 'Content', icon: FileText, href: '/admin/content' },
   { title: 'Reports', icon: BarChart3, href: '/admin/reports' },

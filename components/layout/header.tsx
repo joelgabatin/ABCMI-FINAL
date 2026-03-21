@@ -41,6 +41,7 @@ const navigation = [
       { name: "Feedback & Testimony", href: "/feedback" },
     ],
   },
+  { name: "Live", href: "/live" },
   { name: "Events", href: "/events" },
   { name: "Donate", href: "/donate" },
 ]
