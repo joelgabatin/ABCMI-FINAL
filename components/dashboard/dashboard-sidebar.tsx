@@ -25,7 +25,9 @@ import {
   MapPin,
   Clock,
   Shield,
-  Radio
+  Radio,
+  Mail,
+  GraduationCap
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -62,6 +64,8 @@ const adminNavItems = [
   { title: 'Bible Study', icon: BookOpen, href: '/admin/bible-study' },
   { title: 'Daily Devotion', icon: BookMarked, href: '/admin/devotion' },
   { title: 'Facebook Live', icon: Radio, href: '/admin/live' },
+  { title: 'Messages', icon: Mail, href: '/admin/messages' },
+  { title: 'Missions Training', icon: GraduationCap, href: '/admin/missions-training' },
   { title: 'Ministries', icon: Church, href: '/admin/ministries' },
   { title: 'Branches', icon: MapPin, href: '/admin/branches' },
   { title: 'Content', icon: FileText, href: '/admin/content' },

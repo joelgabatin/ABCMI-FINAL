@@ -20,6 +20,7 @@ const navigation = [
     children: [
       { name: "About Us", href: "/about" },
       { name: "Pastoral Team", href: "/pastoral-team" },
+      { name: "Contact Us", href: "/contact" },
     ],
   },
   {
@@ -56,6 +57,7 @@ const navigation = [
       { name: "Prayer Request", href: "/prayer-request" },
       { name: "Counseling", href: "/counseling" },
       { name: "Feedback & Testimony", href: "/feedback" },
+      { name: "Missions Training", href: "/missions-training" },
     ],
   },
   { name: "Watch Us", href: "/live" },
