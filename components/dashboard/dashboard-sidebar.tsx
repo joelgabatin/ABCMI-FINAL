@@ -20,7 +20,9 @@ import {
   LogOut,
   ChevronRight,
   Church,
-  Star
+  Star,
+  MapPin,
+  Clock
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -52,6 +54,9 @@ const adminNavItems = [
   { title: 'Events', icon: Calendar, href: '/admin/events' },
   { title: 'Counseling', icon: MessageSquare, href: '/admin/counseling' },
   { title: 'Donations', icon: DollarSign, href: '/admin/donations' },
+  { title: 'Testimony', icon: Star, href: '/admin/testimony' },
+  { title: 'Feedback', icon: MessageSquarePlus, href: '/admin/feedback' },
+  { title: 'Branches', icon: MapPin, href: '/admin/branches' },
   { title: 'Content', icon: FileText, href: '/admin/content' },
   { title: 'Reports', icon: BarChart3, href: '/admin/reports' },
   { title: 'Settings', icon: Settings, href: '/admin/settings' },
@@ -61,6 +66,7 @@ const memberNavItems = [
   { title: 'Dashboard', icon: Home, href: '/member' },
   { title: 'Prayer Request', icon: Heart, href: '/member/prayers' },
   { title: 'Events', icon: Calendar, href: '/member/events' },
+  { title: 'Service Schedule', icon: Clock, href: '/member/services' },
   { title: 'Bible Reading', icon: BookOpen, href: '/member/bible-reading' },
   { title: 'Counseling', icon: MessageSquare, href: '/member/counseling' },
   { title: 'Testimony', icon: Star, href: '/member/testimony' },
