@@ -14,7 +14,14 @@ import { cn } from "@/lib/utils"
 
 const navigation = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
+  {
+    name: "About",
+    href: "/about",
+    children: [
+      { name: "About Us", href: "/about" },
+      { name: "Pastoral Team", href: "/pastoral-team" },
+    ],
+  },
   { name: "Ministries", href: "/ministries" },
   {
     name: "Services",
