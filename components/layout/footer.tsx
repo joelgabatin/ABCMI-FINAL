@@ -3,6 +3,7 @@ import { Facebook, Youtube, Mail, Phone, MapPin } from "lucide-react"
 
 const quickLinks = [
   { name: "About Us", href: "/about" },
+  { name: "Pastoral Team", href: "/pastoral-team" },
   { name: "Ministries", href: "/ministries" },
   { name: "Service Schedules", href: "/services" },
   { name: "Events", href: "/events" },
