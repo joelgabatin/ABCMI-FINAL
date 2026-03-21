@@ -12,7 +12,8 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Settings
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -38,8 +39,9 @@ const adminActions = [
   { icon: Heart, label: 'Prayer Requests', href: '/admin/prayers', description: 'Review and respond to prayers' },
   { icon: Calendar, label: 'Manage Events', href: '/admin/events', description: 'Create and edit events' },
   { icon: MessageSquare, label: 'Counseling Requests', href: '/admin/counseling', description: 'View counseling appointments' },
-  { icon: FileText, label: 'Content Management', href: '/admin/content', description: 'Edit website content' },
+  { icon: FileText, label: 'Content Management', href: '/admin/content', description: 'Edit website content & about page' },
   { icon: BarChart3, label: 'Reports', href: '/admin/reports', description: 'View analytics and reports' },
+  { icon: Settings, label: 'Settings', href: '/admin/settings', description: 'Backup, logs, security & notifications' },
 ]
 
 export default function AdminDashboard() {
