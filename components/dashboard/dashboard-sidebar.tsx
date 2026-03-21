@@ -70,6 +70,7 @@ const adminNavItems = [
   { title: 'Branches', icon: MapPin, href: '/admin/branches' },
   { title: 'Content', icon: FileText, href: '/admin/content' },
   { title: 'Reports', icon: BarChart3, href: '/admin/reports' },
+  { title: 'Permissions', icon: Shield, href: '/admin/permissions' },
   { title: 'Settings', icon: Settings, href: '/admin/settings' },
 ]
 
