@@ -1,10 +1,12 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import type { User, Session } from '@supabase/supabase-js'
 
 type UserRole = 'member' | 'admin' | 'pastor'
 
-interface User {
+interface AppUser {
   id: string
   name: string
   email: string
@@ -13,93 +15,120 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null
+  user: AppUser | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: UserRole }>
+  loginWithGoogle: () => Promise<void>
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  logout: () => void
+  logout: () => Promise<void>
   isAdmin: boolean
   isPastor: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Demo users for demonstration purposes
-const DEMO_USERS: (User & { password: string })[] = [
-  { id: '1', name: 'Admin User', email: 'admin@church.org', password: 'admin123', role: 'admin' },
-  { id: '2', name: 'John Member', email: 'john@example.com', password: 'member123', role: 'member' },
-  { id: '3', name: 'Ptr. Julio Coyoy', email: 'pastor@abcmi.org', password: 'pastor123', role: 'pastor' },
-]
+function toAppUser(user: User, profile?: { name?: string; role?: UserRole; avatar_url?: string } | null): AppUser {
+  return {
+    id: user.id,
+    name: profile?.name ?? user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'User',
+    email: user.email ?? '',
+    role: profile?.role ?? 'member',
+    avatar: profile?.avatar_url ?? user.user_metadata?.avatar_url,
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AppUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const supabase = createClient()
+
+  async function loadProfile(supabaseUser: User) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, role, avatar_url')
+      .eq('id', supabaseUser.id)
+      .single()
+    setUser(toAppUser(supabaseUser, profile))
+  }
 
   useEffect(() => {
-    // Check for stored session on mount
-    const storedUser = localStorage.getItem('church_user')
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch {
-        localStorage.removeItem('church_user')
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+      if (session?.user) {
+        loadProfile(session.user)
       }
-    }
-    setIsLoading(false)
+      setIsLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: string, session: Session | null) => {
+        if (session?.user) {
+          loadProfile(session.user)
+        } else {
+          setUser(null)
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const foundUser = DEMO_USERS.find(u => u.email === email && u.password === password)
-    
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser
-      setUser(userWithoutPassword)
-      localStorage.setItem('church_user', JSON.stringify(userWithoutPassword))
-      return { success: true, role: foundUser.role }
-    }
-    
-    return { success: false, error: 'Invalid email or password' }
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string; role?: UserRole }> => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return { success: false, error: error.message }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, role, avatar_url')
+      .eq('id', data.user.id)
+      .single()
+
+    const appUser = toAppUser(data.user, profile)
+    setUser(appUser)
+    return { success: true, role: appUser.role }
+  }
+
+  const loginWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
   }
 
   const register = async (name: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // Check if email already exists
-    if (DEMO_USERS.some(u => u.email === email)) {
-      return { success: false, error: 'Email already registered' }
-    }
-    
-    // Create new user (in demo mode, just create a member)
-    const newUser: User = {
-      id: String(Date.now()),
-      name,
+    const { data, error } = await supabase.auth.signUp({
       email,
-      role: 'member'
+      password,
+      options: { data: { full_name: name } },
+    })
+    if (error) return { success: false, error: error.message }
+    if (data.user) {
+      await supabase.from('profiles').upsert({
+        id: data.user.id,
+        name,
+        email,
+        role: 'member',
+      })
     }
-    
-    setUser(newUser)
-    localStorage.setItem('church_user', JSON.stringify(newUser))
     return { success: true }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut()
     setUser(null)
-    localStorage.removeItem('church_user')
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isLoading, 
-      login, 
-      register, 
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      login,
+      loginWithGoogle,
+      register,
       logout,
       isAdmin: user?.role === 'admin',
-    isPastor: user?.role === 'pastor'
+      isPastor: user?.role === 'pastor',
     }}>
       {children}
     </AuthContext.Provider>

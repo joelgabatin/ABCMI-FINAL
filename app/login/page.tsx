@@ -30,7 +30,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,10 +51,9 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true)
     setError('')
-    // Simulate Google OAuth flow — replace with real provider (e.g. NextAuth or Supabase Google OAuth)
-    await new Promise((r) => setTimeout(r, 1500))
+    await loginWithGoogle()
+    // Redirect is handled by Supabase OAuth — page will navigate away
     setIsGoogleLoading(false)
-    setError('Google login requires OAuth configuration. Please use email/password for now.')
   }
 
   return (
