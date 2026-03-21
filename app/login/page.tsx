@@ -39,7 +39,8 @@ export default function LoginPage() {
     setIsLoading(true)
     const result = await login(email, password)
     if (result.success) {
-      if (result.role === 'super_admin' || result.role === 'admin') router.push('/admin')
+      if (result.role === 'super_admin' || result.role === 'admin') router.push('/super_admin')
+      else if (result.role === 'pastor') router.push('/pastor')
       else router.push('/member')
     } else {
       setError(result.error || 'Login failed')
@@ -179,9 +180,9 @@ export default function LoginPage() {
               <CardContent className="p-4">
                 <p className="text-sm font-medium text-foreground mb-2">Demo Credentials:</p>
                 <div className="space-y-1.5 text-sm text-muted-foreground">
-                  <p><span className="font-medium text-foreground">Admin:</span> admin@church.org / admin123</p>
-                  <p><span className="font-medium text-foreground">Pastor:</span> pastor@abcmi.org / pastor123</p>
-                  <p><span className="font-medium text-foreground">Member:</span> john@example.com / member123</p>
+                  <p><span className="font-medium text-foreground">Admin:</span> superadmin@abcmi.org / Admin@1234</p>
+                  <p><span className="font-medium text-foreground">Pastor:</span> pastor@abcmi.org / Pastor@1234</p>
+                  <p><span className="font-medium text-foreground">Member:</span> (register a new account)</p>
                 </div>
               </CardContent>
             </Card>

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   FileText, Edit, Plus, Eye, Trash2, BookOpen, Calendar,
-  Church, Target, Lightbulb, Shield, History, CheckCircle, X, Save
+  Church, Target, Lightbulb, Shield, History, CheckCircle, X, Save, Loader2
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -48,7 +48,7 @@ export default function AdminContentPage() {
   const [newSermonOpen, setNewSermonOpen] = useState(false)
   const [newSermon, setNewSermon] = useState({ title: "", scripture: "", content: "" })
 
-  // About editor state — initialised from the shared data file
+  // About editor state — initialised from static data, then overwritten by API fetch
   const [mission, setMission] = useState(churchContent.mission.body)
   const [vision, setVision] = useState(churchContent.vision.body)
   const [drivingForce, setDrivingForce] = useState(churchContent.vision.drivingForce)
@@ -56,20 +56,60 @@ export default function AdminContentPage() {
   const [beliefs, setBeliefs] = useState<string[]>(churchContent.statementOfFaith.beliefs)
   const [timeline, setTimeline] = useState<TimelineEntry[]>(churchContent.history.timeline)
 
-  // Saved indicator
-  const [savedSection, setSavedSection] = useState<string | null>(null)
+  // Load persisted content from the database on mount
+  useEffect(() => {
+    fetch('/api/church-content')
+      .then(r => r.json())
+      .then(data => {
+        if (data.mission?.body)               setMission(data.mission.body)
+        if (data.vision?.body)                setVision(data.vision.body)
+        if (data.vision?.drivingForce)        setDrivingForce(data.vision.drivingForce)
+        if (data.coreValues)                  setCoreValues(data.coreValues)
+        if (data.statementOfFaith?.beliefs)   setBeliefs(data.statementOfFaith.beliefs)
+        if (data.history?.timeline)           setTimeline(data.history.timeline)
+      })
+      .catch(() => { /* keep static defaults */ })
+  }, [])
 
-  const showSaved = (section: string) => {
-    setSavedSection(section)
-    setTimeout(() => setSavedSection(null), 2000)
+  // Save indicator & loading state
+  const [savedSection, setSavedSection] = useState<string | null>(null)
+  const [savingSection, setSavingSection] = useState<string | null>(null)
+
+  // Build the full content payload from current state
+  const buildPayload = () => ({
+    mission:  { ...churchContent.mission,  body: mission },
+    vision:   { ...churchContent.vision,   body: vision, drivingForce },
+    coreValues,
+    statementOfFaith: { ...churchContent.statementOfFaith, beliefs },
+    history:  { ...churchContent.history,  timeline },
+  })
+
+  const saveSection = async (section: string) => {
+    setSavingSection(section)
+    try {
+      const res = await fetch('/api/church-content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload()),
+      })
+      if (res.ok) {
+        setSavedSection(section)
+        setTimeout(() => setSavedSection(null), 2000)
+      }
+    } finally {
+      setSavingSection(null)
+    }
   }
 
   const SaveButton = ({ section }: { section: string }) => (
     <Button
-      onClick={() => showSaved(section)}
+      onClick={() => saveSection(section)}
+      disabled={savingSection === section}
       className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
     >
-      {savedSection === section ? (
+      {savingSection === section ? (
+        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+      ) : savedSection === section ? (
         <><CheckCircle className="w-4 h-4 mr-2" />Saved</>
       ) : (
         <><Save className="w-4 h-4 mr-2" />Save Changes</>

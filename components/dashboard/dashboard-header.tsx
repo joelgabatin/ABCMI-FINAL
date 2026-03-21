@@ -74,7 +74,7 @@ export function DashboardHeader({ title, breadcrumbBase }: DashboardHeaderProps)
   }
 
   const baseName = breadcrumbBase?.label ?? 'Dashboard'
-  const baseHref = breadcrumbBase?.href ?? '/admin'
+  const baseHref = breadcrumbBase?.href ?? '/super_admin'
 
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
@@ -177,12 +177,12 @@ export function DashboardHeader({ title, breadcrumbBase }: DashboardHeaderProps)
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/admin/settings" className="cursor-pointer">
+              <a href="/super_admin/settings" className="cursor-pointer">
                 <Settings className="w-4 h-4 mr-2" /> Settings
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/admin/permissions" className="cursor-pointer">
+              <a href="/super_admin/permissions" className="cursor-pointer">
                 <User className="w-4 h-4 mr-2" /> Permissions
               </a>
             </DropdownMenuItem>

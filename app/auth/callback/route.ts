@@ -1,30 +1,38 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/member'
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      // Get user role from profiles table and redirect accordingly
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single()
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-        const role = profile?.role ?? 'member'
-        if (role === 'super_admin') return NextResponse.redirect(`${origin}/admin`)
-        if (role === 'admin') return NextResponse.redirect(`${origin}/admin`)
-        return NextResponse.redirect(`${origin}/member`)
+    if (!error && data.user) {
+      const userId = data.user.id
+
+      // Use service role to bypass RLS and reliably fetch the role
+      const admin = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
+
+      const { data: profile } = await admin
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+
+      const role = profile?.role ?? 'member'
+      if (role === 'super_admin' || role === 'admin') {
+        return NextResponse.redirect(`${origin}/super_admin`)
       }
-      return NextResponse.redirect(`${origin}${next}`)
+      if (role === 'pastor') {
+        return NextResponse.redirect(`${origin}/pastor`)
+      }
+      return NextResponse.redirect(`${origin}/member`)
     }
   }
 

@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { createClient } from '@/lib/supabase/client'
 import type { User, Session } from '@supabase/supabase-js'
 
-type UserRole = 'member' | 'admin' | 'super_admin'
+type UserRole = 'member' | 'admin' | 'super_admin' | 'pastor'
 
 interface AppUser {
   id: string
@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   isAdmin: boolean
   isSuperAdmin: boolean
+  isPastor: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -52,19 +53,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('id', supabaseUser.id)
       .single()
 
-    // Sync Google profile data on every OAuth login
+    // Sync Google name/avatar on every OAuth login — never overwrite role
     if (isOAuth) {
       const updates = {
         id: supabaseUser.id,
         email: supabaseUser.email,
         name: meta?.full_name ?? meta?.name ?? profile?.name,
         avatar_url: meta?.avatar_url ?? meta?.picture ?? profile?.avatar_url,
-        role: profile?.role ?? 'member',
       }
       await supabase.from('profiles').upsert(updates)
-      setUser(toAppUser(supabaseUser, { ...profile, ...updates }))
+      setUser(toAppUser(supabaseUser, { ...updates, role: profile?.role ?? 'member' }))
     } else {
-      setUser(toAppUser(supabaseUser, profile))
+      const { data: roleData } = await supabase.rpc('get_my_role')
+      const resolvedRole = (roleData as UserRole) ?? profile?.role ?? 'member'
+      setUser(toAppUser(supabaseUser, { ...profile, role: resolvedRole }))
     }
   }
 
@@ -93,15 +95,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return { success: false, error: error.message }
 
+    // Use SECURITY DEFINER RPC to bypass RLS and reliably fetch role
+    const { data: roleData } = await supabase.rpc('get_my_role')
     const { data: profile } = await supabase
       .from('profiles')
       .select('name, role, avatar_url')
       .eq('id', data.user.id)
       .single()
 
-    const appUser = toAppUser(data.user, profile)
+    const resolvedRole = (roleData as UserRole) ?? profile?.role ?? 'member'
+    const appUser = toAppUser(data.user, { ...profile, role: resolvedRole })
     setUser(appUser)
-    return { success: true, role: appUser.role }
+    return { success: true, role: resolvedRole }
   }
 
   const loginWithGoogle = async () => {
@@ -149,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       isAdmin: user?.role === 'admin' || user?.role === 'super_admin',
       isSuperAdmin: user?.role === 'super_admin',
+      isPastor: user?.role === 'pastor',
     }}>
       {children}
     </AuthContext.Provider>
