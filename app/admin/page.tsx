@@ -39,6 +39,8 @@ const adminActions = [
   { icon: Heart, label: 'Prayer Requests', href: '/admin/prayers', description: 'Review and respond to prayers' },
   { icon: Calendar, label: 'Manage Events', href: '/admin/events', description: 'Create and edit events' },
   { icon: MessageSquare, label: 'Counseling Requests', href: '/admin/counseling', description: 'View counseling appointments' },
+  { icon: BookOpen, label: 'Bible Study', href: '/admin/bible-study', description: 'Manage groups & study requests' },
+  { icon: FileText, label: 'Daily Devotion', href: '/admin/devotion', description: 'Create & publish daily devotionals' },
   { icon: FileText, label: 'Content Management', href: '/admin/content', description: 'Edit website content & about page' },
   { icon: BarChart3, label: 'Reports', href: '/admin/reports', description: 'View analytics and reports' },
   { icon: Settings, label: 'Settings', href: '/admin/settings', description: 'Backup, logs, security & notifications' },

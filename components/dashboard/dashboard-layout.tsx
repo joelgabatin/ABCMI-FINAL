@@ -12,7 +12,7 @@ import {
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  variant: 'admin' | 'member'
+  variant: 'admin' | 'member' | 'pastor'
   title?: string
   description?: string
 }
