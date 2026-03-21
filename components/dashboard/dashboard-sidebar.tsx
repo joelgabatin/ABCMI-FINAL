@@ -56,11 +56,11 @@ const adminNavItems = [
 
 const memberNavItems = [
   { title: 'Dashboard', icon: Home, href: '/member' },
-  { title: 'Prayer Request', icon: Heart, href: '/prayer-request' },
-  { title: 'Events', icon: Calendar, href: '/events' },
-  { title: 'Bible Reading', icon: BookOpen, href: '/bible-reading' },
-  { title: 'Counseling', icon: MessageSquare, href: '/counseling' },
-  { title: 'Donate', icon: DollarSign, href: '/donate' },
+  { title: 'Prayer Request', icon: Heart, href: '/member/prayers' },
+  { title: 'Events', icon: Calendar, href: '/member/events' },
+  { title: 'Bible Reading', icon: BookOpen, href: '/member/bible-reading' },
+  { title: 'Counseling', icon: MessageSquare, href: '/member/counseling' },
+  { title: 'Donate', icon: DollarSign, href: '/member/donate' },
 ]
 
 const quickLinks = [
