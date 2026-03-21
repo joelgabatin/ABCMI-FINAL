@@ -23,6 +23,7 @@ import {
 const ministries = [
   {
     id: 1,
+    slug: "music-ministry",
     name: "Music Ministry",
     description: "Leading the congregation in worship through music and song. We glorify God with our voices and instruments, creating an atmosphere of praise.",
     icon: Music,
@@ -37,6 +38,7 @@ const ministries = [
   },
   {
     id: 2,
+    slug: "dance-ministry",
     name: "Dance Ministry",
     description: "Expressing worship through movement and dance. We use the art of dance to praise God and minister to the congregation.",
     icon: Star,
@@ -48,6 +50,7 @@ const ministries = [
   },
   {
     id: 3,
+    slug: "singles-adults-ministry",
     name: "Singles and Adults Ministry (SAM)",
     description: "Connecting single adults and mature members through fellowship, Bible study, and community service activities.",
     icon: Users,
@@ -61,6 +64,7 @@ const ministries = [
   },
   {
     id: 4,
+    slug: "youth-ministry",
     name: "Youth Ministry (ABCMI Youth)",
     description: "Empowering young people to live out their faith and become leaders for Christ. We build young disciples through relevant teaching and fellowship.",
     icon: Flame,
@@ -75,6 +79,7 @@ const ministries = [
   },
   {
     id: 5,
+    slug: "mens-ministry",
     name: "Men's Ministry",
     description: "Building godly men through accountability, Bible study, and fellowship. We encourage men to lead their families and serve the church.",
     icon: Users,
@@ -86,6 +91,7 @@ const ministries = [
   },
   {
     id: 6,
+    slug: "womens-ministry",
     name: "Women's Ministry",
     description: "Nurturing women in their faith journey through Bible study, prayer, and mutual support. We build strong, godly women for Christ.",
     icon: Heart,
@@ -97,6 +103,7 @@ const ministries = [
   },
   {
     id: 7,
+    slug: "childrens-ministry",
     name: "Children's Ministry",
     description: "Teaching children the Word of God in fun and engaging ways. We lay the foundation of faith in young hearts through creative lessons.",
     icon: Baby,
@@ -108,6 +115,7 @@ const ministries = [
   },
   {
     id: 8,
+    slug: "health-ministry",
     name: "Health Ministry",
     description: "Caring for the physical well-being of our community as an extension of Christ's love. We provide health education and assistance.",
     icon: Stethoscope,
@@ -119,6 +127,7 @@ const ministries = [
   },
   {
     id: 9,
+    slug: "missions-evangelism",
     name: "Missions and Evangelism Ministry",
     description: "Spreading the Gospel locally and globally through church planting, outreach programs, and mission trips to unreached peoples.",
     icon: Globe,
@@ -132,6 +141,7 @@ const ministries = [
   },
   {
     id: 10,
+    slug: "discipleship-group",
     name: "Discipleship Group",
     description: "Growing deeper in faith through intentional Bible study and one-on-one mentorship. We make disciples who make disciples.",
     icon: BookOpen,
@@ -143,6 +153,7 @@ const ministries = [
   },
   {
     id: 11,
+    slug: "counseling-ministry",
     name: "Counseling Ministry",
     description: "Providing spiritual and emotional support through confidential counseling sessions. We walk alongside those in need with compassion.",
     icon: MessageCircle,
@@ -164,7 +175,7 @@ const eventTypeColors: Record<string, string> = {
 }
 
 const allUpcomingEvents = ministries
-  .flatMap(m => m.events.map(e => ({ ...e, ministry: m.name, color: m.color })))
+  .flatMap(m => m.events.map(e => ({ ...e, ministry: m.name, color: m.color, slug: m.slug })))
   .slice(0, 5)
 
 export default function MinistriesPage() {
@@ -194,29 +205,31 @@ export default function MinistriesPage() {
               <h2 className="text-2xl font-bold text-foreground mb-6">Upcoming Ministry Events</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 {allUpcomingEvents.map((event, i) => (
-                  <Card key={i} className="border-none shadow-md hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <Badge variant="secondary" className={`text-xs mb-2 ${eventTypeColors[event.type] || "bg-muted text-muted-foreground"}`}>
-                        {event.type}
-                      </Badge>
-                      <p className="text-sm font-semibold text-foreground leading-tight mb-1">{event.title}</p>
-                      <p className="text-xs text-[var(--church-primary)] font-medium mb-2">{event.ministry}</p>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Calendar className="w-3 h-3 flex-shrink-0" />
-                          {event.date}
+                  <Link key={i} href={`/ministries/${event.slug}`}>
+                    <Card className="border-none shadow-md hover:shadow-lg transition-shadow cursor-pointer h-full">
+                      <CardContent className="p-4">
+                        <Badge variant="secondary" className={`text-xs mb-2 ${eventTypeColors[event.type] || "bg-muted text-muted-foreground"}`}>
+                          {event.type}
+                        </Badge>
+                        <p className="text-sm font-semibold text-foreground leading-tight mb-1">{event.title}</p>
+                        <p className="text-xs text-[var(--church-primary)] font-medium mb-2">{event.ministry}</p>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Calendar className="w-3 h-3 flex-shrink-0" />
+                            {event.date}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3 flex-shrink-0" />
+                            {event.time}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">{event.location}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3 flex-shrink-0" />
-                          {event.time}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{event.location}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -230,56 +243,64 @@ export default function MinistriesPage() {
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ministries.map((ministry) => (
-                <Card key={ministry.id} className="bg-background border-none shadow-lg hover:shadow-xl transition-shadow group flex flex-col">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className={`w-14 h-14 rounded-xl ${ministry.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <ministry.icon className="w-7 h-7 text-white" />
+                <Link key={ministry.id} href={`/ministries/${ministry.slug}`} className="group">
+                  <Card className="bg-background border-none shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className={`w-14 h-14 rounded-xl ${ministry.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                          <ministry.icon className="w-7 h-7 text-white" />
+                        </div>
+                        <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
+                          {ministry.members} members
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="bg-muted text-muted-foreground text-xs">
-                        {ministry.members} members
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg text-foreground group-hover:text-[var(--church-primary)] transition-colors leading-tight">
-                      {ministry.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col gap-3">
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {ministry.description}
-                    </p>
-                    <div className="space-y-1.5 text-sm border-t border-border pt-3">
-                      <div className="flex items-start gap-2">
-                        <Users className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span className="text-foreground font-medium text-xs">{ministry.leader}</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Clock className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <span className="text-muted-foreground text-xs">{ministry.meetingTime}</span>
-                      </div>
-                    </div>
-
-                    {/* Ministry events */}
-                    {ministry.events.length > 0 && (
-                      <div className="border-t border-border pt-3">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Upcoming Events</p>
-                        <div className="space-y-2">
-                          {ministry.events.slice(0, 2).map((event, i) => (
-                            <div key={i} className="flex items-start gap-2 bg-muted/50 rounded-lg p-2">
-                              <Badge variant="secondary" className={`text-[10px] flex-shrink-0 mt-0.5 ${eventTypeColors[event.type] || "bg-muted text-muted-foreground"}`}>
-                                {event.type}
-                              </Badge>
-                              <div className="min-w-0">
-                                <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
-                                <p className="text-[10px] text-muted-foreground">{event.date} • {event.time}</p>
-                              </div>
-                            </div>
-                          ))}
+                      <CardTitle className="text-lg text-foreground group-hover:text-[var(--church-primary)] transition-colors leading-tight">
+                        {ministry.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col gap-3">
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {ministry.description}
+                      </p>
+                      <div className="space-y-1.5 text-sm border-t border-border pt-3">
+                        <div className="flex items-start gap-2">
+                          <Users className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-foreground font-medium text-xs">{ministry.leader}</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Clock className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground text-xs">{ministry.meetingTime}</span>
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+
+                      {/* Ministry events */}
+                      {ministry.events.length > 0 && (
+                        <div className="border-t border-border pt-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Upcoming Events</p>
+                          <div className="space-y-2">
+                            {ministry.events.slice(0, 2).map((event, i) => (
+                              <div key={i} className="flex items-start gap-2 bg-muted/50 rounded-lg p-2">
+                                <Badge variant="secondary" className={`text-[10px] flex-shrink-0 mt-0.5 ${eventTypeColors[event.type] || "bg-muted text-muted-foreground"}`}>
+                                  {event.type}
+                                </Badge>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
+                                  <p className="text-[10px] text-muted-foreground">{event.date} • {event.time}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-auto pt-2">
+                        <span className="flex items-center gap-1 text-xs text-[var(--church-primary)] font-medium group-hover:gap-2 transition-all">
+                          View Ministry <ArrowRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>

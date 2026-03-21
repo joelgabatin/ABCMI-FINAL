@@ -1,6 +1,7 @@
 import { SiteLayout } from "@/components/layout/site-layout"
 import { Card, CardContent } from "@/components/ui/card"
-import { Target, Eye, Flame, BookOpen } from "lucide-react"
+import { Target, Eye, Quote } from "lucide-react"
+import Image from "next/image"
 import { churchContent } from "@/lib/church-content"
 
 const sectionIcons = [Target, Eye, Flame, BookOpen]
@@ -18,6 +19,90 @@ export default function AboutPage() {
             <p className="text-xl text-white/90 text-pretty">
               Learn about our history, mission, vision, and the values that guide us.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Founders / Pioneers */}
+      <section className="py-16 lg:py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <span className="text-[var(--church-gold)] font-semibold text-sm uppercase tracking-wider">Our Founders</span>
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mt-2 text-balance">The Pioneers of ABCMI</h2>
+              <p className="text-muted-foreground mt-4 max-w-2xl mx-auto text-pretty">
+                Arise and Build for Christ Ministries Inc. was founded in 1984 in Baguio City by two servants of God whose lives were wholly surrendered to the vision God placed in their hearts — to build His kingdom among the nations.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Founder 1 */}
+              <Card className="bg-background border border-border shadow-xl overflow-hidden group hover:border-[var(--church-primary)] transition-colors">
+                <CardContent className="p-0">
+                  <div className="relative h-72 w-full overflow-hidden bg-[var(--church-soft-gray)]">
+                    <Image
+                      src="/images/founder-marino-coyoy.jpg"
+                      alt="Rev. Marino S. Coyoy — Co-Founder of ABCMI"
+                      fill
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4 text-white">
+                      <p className="text-xl font-bold">Rev. Marino S. Coyoy</p>
+                      <p className="text-white/80 text-sm">Co-Founder &amp; Senior Pastor</p>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <Quote className="w-6 h-6 text-[var(--church-gold)] flex-shrink-0 mt-1" />
+                      <p className="text-muted-foreground text-sm leading-relaxed italic text-pretty">
+                        "God gave us a burden for the lost — not just in Baguio but to the nations. We started with faith, a few families, and a word from God: Arise and Build."
+                      </p>
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed text-pretty">
+                      Rev. Marino S. Coyoy is the visionary co-founder of ABCMI. Called into full-time ministry in the 1980s, he pioneered the church planting work that began in East Quirino Hill, Baguio City, and has since expanded to 13 branches across the Philippines and abroad. Under his leadership, ABCMI established its core mission of teaching, training, and equipping faithful servants for local and global church planting.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Co-Founder */}
+              <Card className="bg-background border border-border shadow-xl overflow-hidden group hover:border-[var(--church-primary)] transition-colors">
+                <CardContent className="p-0">
+                  <div className="relative h-72 w-full overflow-hidden bg-[var(--church-soft-gray)]">
+                    <Image
+                      src="/images/founder-elizabeth-coyoy.jpg"
+                      alt="Rev. Elizabeth L. Coyoy — Co-Founder of ABCMI"
+                      fill
+                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4 text-white">
+                      <p className="text-xl font-bold">Rev. Elizabeth L. Coyoy</p>
+                      <p className="text-white/80 text-sm">Co-Founder &amp; Women's Ministry Pioneer</p>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <Quote className="w-6 h-6 text-[var(--church-gold)] flex-shrink-0 mt-1" />
+                      <p className="text-muted-foreground text-sm leading-relaxed italic text-pretty">
+                        "Every soul matters to God. We planted this church with tears, prayers, and the deep conviction that God is faithful to build what He has called us to build."
+                      </p>
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed text-pretty">
+                      Rev. Elizabeth L. Coyoy co-founded ABCMI alongside her husband and has been a pillar of strength and prayer in the ministry for four decades. She pioneered the Women's Ministry and played a vital role in nurturing the early congregation. Her heart for discipleship and intercession continues to shape the spiritual culture of the entire ABCMI network.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Legacy banner */}
+            <div className="mt-10 bg-gradient-to-r from-[var(--church-primary)] to-[var(--church-primary-deep)] rounded-2xl p-8 text-white text-center">
+              <p className="text-lg font-semibold mb-2">40 Years of God's Faithfulness</p>
+              <p className="text-white/85 text-sm max-w-xl mx-auto text-pretty">
+                From a single house church in 1984 to 13 branches across the Philippines and Southeast Asia — the legacy of our founders is a testament to what God can do through two surrendered lives.
+              </p>
+            </div>
           </div>
         </div>
       </section>
