@@ -39,8 +39,7 @@ export default function LoginPage() {
     setIsLoading(true)
     const result = await login(email, password)
     if (result.success) {
-      if (result.role === 'admin') router.push('/admin')
-      else if (result.role === 'pastor') router.push('/pastor')
+      if (result.role === 'super_admin' || result.role === 'admin') router.push('/admin')
       else router.push('/member')
     } else {
       setError(result.error || 'Login failed')

@@ -20,8 +20,8 @@ export async function GET(request: Request) {
           .single()
 
         const role = profile?.role ?? 'member'
+        if (role === 'super_admin') return NextResponse.redirect(`${origin}/admin`)
         if (role === 'admin') return NextResponse.redirect(`${origin}/admin`)
-        if (role === 'pastor') return NextResponse.redirect(`${origin}/pastor`)
         return NextResponse.redirect(`${origin}/member`)
       }
       return NextResponse.redirect(`${origin}${next}`)
