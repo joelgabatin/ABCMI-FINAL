@@ -12,7 +12,7 @@ import {
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  variant: 'admin' | 'member' | 'pastor'
+  variant: 'admin' | 'member' | 'super_admin' | 'pastor'
   title?: string
   description?: string
 }
@@ -23,7 +23,7 @@ export function DashboardLayout({
   title,
   description 
 }: DashboardLayoutProps) {
-  const { user, isLoading, isAdmin } = useAuth()
+  const { user, isLoading, isAdmin, isPastor } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -32,9 +32,11 @@ export function DashboardLayout({
         router.push('/login')
       } else if (variant === 'admin' && !isAdmin) {
         router.push('/member')
+      } else if (variant === 'pastor' && !isPastor) {
+        router.push('/member')
       }
     }
-  }, [user, isLoading, isAdmin, variant, router])
+  }, [user, isLoading, isAdmin, isPastor, variant, router])
 
   if (isLoading) {
     return (
@@ -47,7 +49,7 @@ export function DashboardLayout({
     )
   }
 
-  if (!user || (variant === 'admin' && !isAdmin)) {
+  if (!user || (variant === 'admin' && !isAdmin) || (variant === 'pastor' && !isPastor)) {
     return null
   }
 

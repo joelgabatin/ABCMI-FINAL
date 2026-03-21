@@ -1,7 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -rn \"router.push\\\\|redirect\\\\|useRouter\" 'c:\\\\Users\\\\Acer Nitro 5\\\\Desktop\\\\GITHUB REPOSITORIES\\\\ABCMI-FINAL\\\\app\\\\member' --include=*.tsx)"
+      "Bash(grep -rn \"router.push\\\\|redirect\\\\|useRouter\" 'c:\\\\Users\\\\Acer Nitro 5\\\\Desktop\\\\GITHUB REPOSITORIES\\\\ABCMI-FINAL\\\\app\\\\member' --include=*.tsx)",
+      "Bash(python3 -c \":*)",
+      "Bash(powershell -Command \"Move-Item ''c:\\\\Users\\\\Acer Nitro 5\\\\Desktop\\\\GITHUB REPOSITORIES\\\\ABCMI-FINAL\\\\app\\\\admin'' ''c:\\\\Users\\\\Acer Nitro 5\\\\Desktop\\\\GITHUB REPOSITORIES\\\\ABCMI-FINAL\\\\app\\\\super_admin''\")",
+      "Bash(powershell -Command \"Remove-Item ''c:\\\\Users\\\\Acer Nitro 5\\\\Desktop\\\\GITHUB REPOSITORIES\\\\ABCMI-FINAL\\\\middleware.ts'' -Force; Stop-Process -Id 26544 -Force\")",
+      "mcp__supabase__execute_sql",
+      "Bash(curl -s -X DELETE \"https://hxeyrlacblbbfflfyqyb.supabase.co/auth/v1/admin/users/14e8da58-a606-4aee-a449-2cc381bc6701\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\")",
+      "Bash(curl -s -X PUT \"https://hxeyrlacblbbfflfyqyb.supabase.co/auth/v1/admin/users/14e8da58-a606-4aee-a449-2cc381bc6701\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"Content-Type: application/json\" -d '{\"\"password\"\": \"\"Admin@1234\"\", \"\"email_confirm\"\": true}')",
+      "Bash(curl -s -X POST \"https://hxeyrlacblbbfflfyqyb.supabase.co/auth/v1/admin/users\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"Content-Type: application/json\" -d '{\"\"email\"\": \"\"superadmin@abcmi.org\"\", \"\"password\"\": \"\"Admin@1234\"\", \"\"email_confirm\"\": true}')",
+      "mcp__supabase__apply_migration",
+      "Bash(curl -s -X POST \"https://hxeyrlacblbbfflfyqyb.supabase.co/auth/v1/admin/users\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4ZXlybGFjYmxiYmZmbGZ5cXliIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDA4MTYwOSwiZXhwIjoyMDg5NjU3NjA5fQ.SlRUHp8XfvCjaHjuuQdKB4SwWEnxaq03AgTWae3arns\" -H \"Content-Type: application/json\" -d '{\"\"email\"\": \"\"pastor@abcmi.org\"\", \"\"password\"\": \"\"Pastor@1234\"\", \"\"email_confirm\"\": true}')",
+      "mcp__supabase__list_tables"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

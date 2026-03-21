@@ -53,25 +53,25 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 const adminNavItems = [
-  { title: 'Dashboard', icon: Home, href: '/admin' },
-  { title: 'Members', icon: Users, href: '/admin/members' },
-  { title: 'Prayer Requests', icon: Heart, href: '/admin/prayers' },
-  { title: 'Events', icon: Calendar, href: '/admin/events' },
-  { title: 'Counseling', icon: MessageSquare, href: '/admin/counseling' },
-  { title: 'Donations', icon: DollarSign, href: '/admin/donations' },
-  { title: 'Testimony', icon: Star, href: '/admin/testimony' },
-  { title: 'Feedback', icon: MessageSquarePlus, href: '/admin/feedback' },
-  { title: 'Bible Study', icon: BookOpen, href: '/admin/bible-study' },
-  { title: 'Daily Devotion', icon: BookMarked, href: '/admin/devotion' },
-  { title: 'Facebook Live', icon: Radio, href: '/admin/live' },
-  { title: 'Messages', icon: Mail, href: '/admin/messages' },
-  { title: 'Missions Training', icon: GraduationCap, href: '/admin/missions-training' },
-  { title: 'Ministries', icon: Church, href: '/admin/ministries' },
-  { title: 'Branches', icon: MapPin, href: '/admin/branches' },
-  { title: 'Content', icon: FileText, href: '/admin/content' },
-  { title: 'Reports', icon: BarChart3, href: '/admin/reports' },
-  { title: 'Permissions', icon: Shield, href: '/admin/permissions' },
-  { title: 'Settings', icon: Settings, href: '/admin/settings' },
+  { title: 'Dashboard', icon: Home, href: '/super_admin' },
+  { title: 'Members', icon: Users, href: '/super_admin/members' },
+  { title: 'Prayer Requests', icon: Heart, href: '/super_admin/prayers' },
+  { title: 'Events', icon: Calendar, href: '/super_admin/events' },
+  { title: 'Counseling', icon: MessageSquare, href: '/super_admin/counseling' },
+  { title: 'Donations', icon: DollarSign, href: '/super_admin/donations' },
+  { title: 'Testimony', icon: Star, href: '/super_admin/testimony' },
+  { title: 'Feedback', icon: MessageSquarePlus, href: '/super_admin/feedback' },
+  { title: 'Bible Study', icon: BookOpen, href: '/super_admin/bible-study' },
+  { title: 'Daily Devotion', icon: BookMarked, href: '/super_admin/devotion' },
+  { title: 'Facebook Live', icon: Radio, href: '/super_admin/live' },
+  { title: 'Messages', icon: Mail, href: '/super_admin/messages' },
+  { title: 'Missions Training', icon: GraduationCap, href: '/super_admin/missions-training' },
+  { title: 'Ministries', icon: Church, href: '/super_admin/ministries' },
+  { title: 'Branches', icon: MapPin, href: '/super_admin/branches' },
+  { title: 'Content', icon: FileText, href: '/super_admin/content' },
+  { title: 'Reports', icon: BarChart3, href: '/super_admin/reports' },
+  { title: 'Permissions', icon: Shield, href: '/super_admin/permissions' },
+  { title: 'Settings', icon: Settings, href: '/super_admin/settings' },
 ]
 
 const memberNavItems = [
@@ -199,7 +199,7 @@ export function DashboardSidebar({ variant }: DashboardSidebarProps) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="Admin Panel">
-                      <Link href="/admin" className="text-[var(--church-primary)]">
+                      <Link href="/super_admin" className="text-[var(--church-primary)]">
                         <Settings className="w-4 h-4" />
                         <span>Admin Panel</span>
                       </Link>
@@ -272,7 +272,7 @@ export function DashboardSidebar({ variant }: DashboardSidebarProps) {
                 className="w-56"
               >
                 <DropdownMenuItem asChild>
-                  <Link href={variant === 'admin' ? '/admin/settings' : '/member/settings'}>
+                  <Link href={variant === 'admin' ? '/super_admin/settings' : '/member/settings'}>
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </Link>

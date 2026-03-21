@@ -30,15 +30,15 @@ const recentActivity = [
 ]
 
 const adminActions = [
-  { icon: Users, label: 'Manage Members', href: '/admin/members', description: 'View and manage church members' },
-  { icon: Heart, label: 'Prayer Requests', href: '/admin/prayers', description: 'Review and respond to prayers' },
-  { icon: Calendar, label: 'Manage Events', href: '/admin/events', description: 'Create and edit events' },
-  { icon: MessageSquare, label: 'Counseling Requests', href: '/admin/counseling', description: 'View counseling appointments' },
-  { icon: BookOpen, label: 'Bible Study', href: '/admin/bible-study', description: 'Manage groups & study requests' },
-  { icon: FileText, label: 'Daily Devotion', href: '/admin/devotion', description: 'Create & publish daily devotionals' },
-  { icon: GraduationCap, label: 'Missions Training', href: '/admin/missions-training', description: 'Manage training programs' },
-  { icon: Church, label: 'Branches', href: '/admin/branches', description: 'Manage satellite branches' },
-  { icon: Settings, label: 'Permissions', href: '/admin/permissions', description: 'Manage user access & privileges' },
+  { icon: Users, label: 'Manage Members', href: '/super_admin/members', description: 'View and manage church members' },
+  { icon: Heart, label: 'Prayer Requests', href: '/super_admin/prayers', description: 'Review and respond to prayers' },
+  { icon: Calendar, label: 'Manage Events', href: '/super_admin/events', description: 'Create and edit events' },
+  { icon: MessageSquare, label: 'Counseling Requests', href: '/super_admin/counseling', description: 'View counseling appointments' },
+  { icon: BookOpen, label: 'Bible Study', href: '/super_admin/bible-study', description: 'Manage groups & study requests' },
+  { icon: FileText, label: 'Daily Devotion', href: '/super_admin/devotion', description: 'Create & publish daily devotionals' },
+  { icon: GraduationCap, label: 'Missions Training', href: '/super_admin/missions-training', description: 'Manage training programs' },
+  { icon: Church, label: 'Branches', href: '/super_admin/branches', description: 'Manage satellite branches' },
+  { icon: Settings, label: 'Permissions', href: '/super_admin/permissions', description: 'Manage user access & privileges' },
 ]
 
 const branchStats = [
@@ -239,12 +239,12 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="space-y-3">
                 {[
-                  { label: 'Pending Prayer Requests', count: 8, href: '/admin/prayers', color: 'text-rose-500', bg: 'bg-rose-50' },
-                  { label: 'Pending Counseling Requests', count: 3, href: '/admin/counseling', color: 'text-amber-600', bg: 'bg-amber-50' },
-                  { label: 'Training Registrations', count: 5, href: '/admin/missions-training', color: 'text-[var(--church-primary)]', bg: 'bg-[var(--church-primary)]/10' },
-                  { label: 'Unread Messages', count: 4, href: '/admin/messages', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                  { label: 'Pending Testimonies', count: 2, href: '/admin/testimony', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                  { label: 'New Member Registrations', count: 6, href: '/admin/members', color: 'text-[var(--church-gold)]', bg: 'bg-[var(--church-gold)]/10' },
+                  { label: 'Pending Prayer Requests', count: 8, href: '/super_admin/prayers', color: 'text-rose-500', bg: 'bg-rose-50' },
+                  { label: 'Pending Counseling Requests', count: 3, href: '/super_admin/counseling', color: 'text-amber-600', bg: 'bg-amber-50' },
+                  { label: 'Training Registrations', count: 5, href: '/super_admin/missions-training', color: 'text-[var(--church-primary)]', bg: 'bg-[var(--church-primary)]/10' },
+                  { label: 'Unread Messages', count: 4, href: '/super_admin/messages', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                  { label: 'Pending Testimonies', count: 2, href: '/super_admin/testimony', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                  { label: 'New Member Registrations', count: 6, href: '/super_admin/members', color: 'text-[var(--church-gold)]', bg: 'bg-[var(--church-gold)]/10' },
                 ].map(item => (
                   <Link key={item.label} href={item.href}>
                     <div className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-[var(--church-primary)]/40 hover:bg-muted/40 transition-all cursor-pointer">
