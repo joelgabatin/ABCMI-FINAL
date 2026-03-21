@@ -52,6 +52,7 @@ const adminNavItems = [
   { title: 'Donations', icon: DollarSign, href: '/admin/donations' },
   { title: 'Content', icon: FileText, href: '/admin/content' },
   { title: 'Reports', icon: BarChart3, href: '/admin/reports' },
+  { title: 'Settings', icon: Settings, href: '/admin/settings' },
 ]
 
 const memberNavItems = [
