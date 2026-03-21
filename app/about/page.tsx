@@ -4,8 +4,6 @@ import { Target, Eye, Quote } from "lucide-react"
 import Image from "next/image"
 import { churchContent } from "@/lib/church-content"
 
-const sectionIcons = [Target, Eye, Flame, BookOpen]
-
 export default function AboutPage() {
   const { mission, vision, coreValues, statementOfFaith, history } = churchContent
 

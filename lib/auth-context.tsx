@@ -2,22 +2,24 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-type UserRole = 'member' | 'admin'
+type UserRole = 'member' | 'admin' | 'pastor'
 
 interface User {
   id: string
   name: string
   email: string
   role: UserRole
+  avatar?: string
 }
 
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; role?: UserRole }>
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isAdmin: boolean
+  isPastor: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const DEMO_USERS: (User & { password: string })[] = [
   { id: '1', name: 'Admin User', email: 'admin@church.org', password: 'admin123', role: 'admin' },
   { id: '2', name: 'John Member', email: 'john@example.com', password: 'member123', role: 'member' },
+  { id: '3', name: 'Ptr. Julio Coyoy', email: 'pastor@abcmi.org', password: 'pastor123', role: 'pastor' },
 ]
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -55,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { password: _, ...userWithoutPassword } = foundUser
       setUser(userWithoutPassword)
       localStorage.setItem('church_user', JSON.stringify(userWithoutPassword))
-      return { success: true }
+      return { success: true, role: foundUser.role }
     }
     
     return { success: false, error: 'Invalid email or password' }
@@ -95,7 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login, 
       register, 
       logout,
-      isAdmin: user?.role === 'admin'
+      isAdmin: user?.role === 'admin',
+    isPastor: user?.role === 'pastor'
     }}>
       {children}
     </AuthContext.Provider>
