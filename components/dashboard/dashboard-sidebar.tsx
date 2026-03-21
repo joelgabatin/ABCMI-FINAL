@@ -15,6 +15,7 @@ import {
   BarChart3,
   Settings,
   BookOpen,
+  BookMarked,
   Bell,
   User,
   LogOut,
@@ -22,7 +23,8 @@ import {
   Church,
   Star,
   MapPin,
-  Clock
+  Clock,
+  Shield
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -56,6 +58,8 @@ const adminNavItems = [
   { title: 'Donations', icon: DollarSign, href: '/admin/donations' },
   { title: 'Testimony', icon: Star, href: '/admin/testimony' },
   { title: 'Feedback', icon: MessageSquarePlus, href: '/admin/feedback' },
+  { title: 'Bible Study', icon: BookOpen, href: '/admin/bible-study' },
+  { title: 'Daily Devotion', icon: BookMarked, href: '/admin/devotion' },
   { title: 'Branches', icon: MapPin, href: '/admin/branches' },
   { title: 'Content', icon: FileText, href: '/admin/content' },
   { title: 'Reports', icon: BarChart3, href: '/admin/reports' },
@@ -68,10 +72,21 @@ const memberNavItems = [
   { title: 'Events', icon: Calendar, href: '/member/events' },
   { title: 'Service Schedule', icon: Clock, href: '/member/services' },
   { title: 'Bible Reading', icon: BookOpen, href: '/member/bible-reading' },
+  { title: 'Bible Study', icon: BookMarked, href: '/member/bible-study' },
   { title: 'Counseling', icon: MessageSquare, href: '/member/counseling' },
   { title: 'Testimony', icon: Star, href: '/member/testimony' },
   { title: 'Feedback', icon: MessageSquarePlus, href: '/member/feedback' },
   { title: 'Donate', icon: DollarSign, href: '/member/donate' },
+]
+
+const pastorNavItems = [
+  { title: 'Dashboard', icon: Home, href: '/pastor' },
+  { title: 'Branch Monitoring', icon: Church, href: '/pastor/branch' },
+  { title: 'Members', icon: Users, href: '/pastor/members' },
+  { title: 'Counseling', icon: MessageSquare, href: '/pastor/counseling' },
+  { title: 'Prayer Requests', icon: Heart, href: '/pastor/prayers' },
+  { title: 'Service Schedule', icon: Clock, href: '/pastor/schedule' },
+  { title: 'Report Submission', icon: BarChart3, href: '/pastor/reports' },
 ]
 
 const quickLinks = [
@@ -81,14 +96,14 @@ const quickLinks = [
 ]
 
 interface DashboardSidebarProps {
-  variant: 'admin' | 'member'
+  variant: 'admin' | 'member' | 'pastor'
 }
 
 export function DashboardSidebar({ variant }: DashboardSidebarProps) {
   const pathname = usePathname()
   const { user, logout, isAdmin } = useAuth()
   
-  const navItems = variant === 'admin' ? adminNavItems : memberNavItems
+  const navItems = variant === 'admin' ? adminNavItems : variant === 'pastor' ? pastorNavItems : memberNavItems
 
   const getInitials = (name: string) => {
     return name
@@ -111,7 +126,7 @@ export function DashboardSidebar({ variant }: DashboardSidebarProps) {
               Arise & Build
             </span>
             <span className="text-xs text-muted-foreground">
-              {variant === 'admin' ? 'Admin Panel' : 'Member Portal'}
+              {variant === 'admin' ? 'Admin Panel' : variant === 'pastor' ? 'Pastor Portal' : 'Member Portal'}
             </span>
           </div>
         </Link>
@@ -122,7 +137,7 @@ export function DashboardSidebar({ variant }: DashboardSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {variant === 'admin' ? 'Administration' : 'Main Menu'}
+            {variant === 'admin' ? 'Administration' : variant === 'pastor' ? 'Pastor Portal' : 'Main Menu'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
