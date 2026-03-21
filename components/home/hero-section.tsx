@@ -22,12 +22,12 @@ export function HeroSection() {
 
           {/* Church Name */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-balance">
-            Arise and Build For Christ Ministries Inc.
+            Welcome to our Church
           </h1>
 
-          {/* Welcome Message */}
+          {/* Tagline */}
           <p className="text-xl md:text-2xl text-white/90 mb-4 font-light">
-            Welcome to Our Church Family
+            Arise and Build For Christ Ministries Inc.
           </p>
           <p className="text-lg text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed">
             A faith-centered community dedicated to spreading the Gospel, nurturing believers, and building disciples for Christ. Join us in worship, prayer, and fellowship.
