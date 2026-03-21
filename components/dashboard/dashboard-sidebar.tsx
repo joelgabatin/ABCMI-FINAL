@@ -8,7 +8,8 @@ import {
   Users, 
   Calendar, 
   Heart, 
-  MessageSquare, 
+  MessageSquare,
+  MessageSquarePlus,
   DollarSign,
   FileText,
   BarChart3,
@@ -18,7 +19,8 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Church
+  Church,
+  Star
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -61,6 +63,8 @@ const memberNavItems = [
   { title: 'Events', icon: Calendar, href: '/member/events' },
   { title: 'Bible Reading', icon: BookOpen, href: '/member/bible-reading' },
   { title: 'Counseling', icon: MessageSquare, href: '/member/counseling' },
+  { title: 'Testimony', icon: Star, href: '/member/testimony' },
+  { title: 'Feedback', icon: MessageSquarePlus, href: '/member/feedback' },
   { title: 'Donate', icon: DollarSign, href: '/member/donate' },
 ]
 
