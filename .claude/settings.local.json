@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"router.push\\\\|redirect\\\\|useRouter\" 'c:\\\\Users\\\\Acer Nitro 5\\\\Desktop\\\\GITHUB REPOSITORIES\\\\ABCMI-FINAL\\\\app\\\\member' --include=*.tsx)"
+    ]
+  }
+}

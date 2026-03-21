@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { createClient } from '@/lib/supabase/client'
 import type { User, Session } from '@supabase/supabase-js'
 
-type UserRole = 'member' | 'admin' | 'pastor'
+type UserRole = 'member' | 'admin' | 'super_admin'
 
 interface AppUser {
   id: string
@@ -22,7 +22,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
   isAdmin: boolean
-  isPastor: boolean
+  isSuperAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -52,9 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }: { data: { session: Session | null } }) => {
       if (session?.user) {
-        loadProfile(session.user)
+        await loadProfile(session.user)
       }
       setIsLoading(false)
     })
@@ -127,8 +127,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginWithGoogle,
       register,
       logout,
-      isAdmin: user?.role === 'admin',
-      isPastor: user?.role === 'pastor',
+      isAdmin: user?.role === 'admin' || user?.role === 'super_admin',
+      isSuperAdmin: user?.role === 'super_admin',
     }}>
       {children}
     </AuthContext.Provider>
