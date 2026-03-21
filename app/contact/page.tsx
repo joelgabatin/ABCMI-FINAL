@@ -30,66 +30,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Info row */}
-      <section className="py-12 bg-[var(--church-light-blue)]">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-none shadow-sm bg-background">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-5 h-5 text-[var(--church-primary)]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm mb-1">Address</p>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    East Quirino Hill, Baguio City<br />Benguet, Philippines 2600
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm bg-background">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-5 h-5 text-[var(--church-primary)]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm mb-1">Phone</p>
-                  <p className="text-muted-foreground text-sm">+63 74 XXX XXXX</p>
-                  <p className="text-muted-foreground text-sm">+63 9XX XXX XXXX</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm bg-background">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-5 h-5 text-[var(--church-primary)]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm mb-1">Email</p>
-                  <p className="text-muted-foreground text-sm">info@abcmi.org</p>
-                  <p className="text-muted-foreground text-sm">pastor@abcmi.org</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-sm bg-background">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5 text-[var(--church-primary)]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm mb-1">Office Hours</p>
-                  <p className="text-muted-foreground text-sm">Mon–Fri: 8AM – 5PM</p>
-                  <p className="text-muted-foreground text-sm">Sat: 8AM – 12PM</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* Form (left) + Map (right) */}
       <section className="py-16 lg:py-24 bg-background">
         <div className="container mx-auto px-4">
@@ -178,7 +118,7 @@ export default function ContactPage() {
               <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
                 <MapPin className="w-6 h-6 text-[var(--church-primary)]" /> Find Us
               </h2>
-              <div className="rounded-2xl overflow-hidden border border-border shadow-md h-[520px] bg-[var(--church-soft-gray)]">
+              <div className="rounded-2xl overflow-hidden border border-border shadow-md h-[550px] bg-[var(--church-soft-gray)]">
                 <iframe
                   title="ABCMI Main Church Location"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3828.7165538370545!2d120.59718!3d16.40298!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTbCsDI0JzEwLjciTiAxMjDCsDM1JzUwLjAiRQ!5e0!3m2!1sen!2sph!4v1620000000000!5m2!1sen!2sph"
@@ -196,6 +136,69 @@ export default function ContactPage() {
               </p>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* Get in Touch — info cards below */}
+      <section className="py-12 bg-[var(--church-light-blue)]">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold text-foreground text-center mb-8">Get in Touch with Us</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-5 h-5 text-[var(--church-primary)]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm mb-1">Address</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      East Quirino Hill, Baguio City<br />Benguet, Philippines 2600
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-5 h-5 text-[var(--church-primary)]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm mb-1">Phone</p>
+                    <p className="text-muted-foreground text-sm">+63 74 XXX XXXX</p>
+                    <p className="text-muted-foreground text-sm">+63 9XX XXX XXXX</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-[var(--church-primary)]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm mb-1">Email</p>
+                    <p className="text-muted-foreground text-sm">info@abcmi.org</p>
+                    <p className="text-muted-foreground text-sm">pastor@abcmi.org</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-background">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[var(--church-primary)]/10 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-[var(--church-primary)]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm mb-1">Office Hours</p>
+                    <p className="text-muted-foreground text-sm">Mon–Fri: 8AM – 5PM</p>
+                    <p className="text-muted-foreground text-sm">Sat: 8AM – 12PM</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
