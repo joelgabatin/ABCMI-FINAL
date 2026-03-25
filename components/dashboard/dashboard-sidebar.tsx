@@ -1,13 +1,13 @@
 "use client"
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { 
+import { useState } from 'react'
+import {
   Home,
-  Users, 
-  Calendar, 
-  Heart, 
+  Users,
+  Calendar,
+  Heart,
   MessageSquare,
   MessageSquarePlus,
   DollarSign,
@@ -27,7 +27,8 @@ import {
   Shield,
   Radio,
   Mail,
-  GraduationCap
+  GraduationCap,
+  ChevronDown,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -41,8 +42,16 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,10 +116,18 @@ interface DashboardSidebarProps {
   variant: 'admin' | 'member' | 'pastor'
 }
 
+const branchSubItems = [
+  { title: 'Branches',  icon: MapPin, href: '/super_admin/branches?tab=branches' },
+  { title: 'Members',   icon: Users,  href: '/super_admin/branches?tab=members'  },
+  { title: 'Pastors',   icon: Shield, href: '/super_admin/branches?tab=pastors'  },
+]
+
 export function DashboardSidebar({ variant }: DashboardSidebarProps) {
   const pathname = usePathname()
   const { user, logout, isAdmin } = useAuth()
-  
+  const isBranchesActive = pathname === '/super_admin/branches'
+  const [branchesOpen, setBranchesOpen] = useState(isBranchesActive)
+
   const navItems = variant === 'admin' ? adminNavItems : variant === 'pastor' ? pastorNavItems : memberNavItems
 
   const getInitials = (name: string) => {
@@ -126,9 +143,11 @@ export function DashboardSidebar({ variant }: DashboardSidebarProps) {
     <Sidebar>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[var(--church-primary)] flex items-center justify-center">
-            <Church className="w-6 h-6 text-white" />
-          </div>
+          <img 
+            src="/images/abcmi-logo.png" 
+            alt="Arise and Build For Christ Ministries" 
+            className="w-10 h-10 rounded-lg"
+          />
           <div className="flex flex-col">
             <span className="font-heading font-bold text-sm text-foreground leading-tight">
               Arise & Build
@@ -149,20 +168,58 @@ export function DashboardSidebar({ variant }: DashboardSidebarProps) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={pathname === item.href}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map((item) => {
+                if (item.title === 'Branches' && variant === 'admin') {
+                  return (
+                    <Collapsible key="branches" open={branchesOpen} onOpenChange={setBranchesOpen} asChild>
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton
+                            isActive={isBranchesActive}
+                            tooltip="Branches"
+                            className="w-full"
+                          >
+                            <MapPin className="w-4 h-4" />
+                            <span>Branches</span>
+                            <ChevronDown className={`ml-auto w-4 h-4 transition-transform duration-200 ${branchesOpen ? 'rotate-180' : ''}`} />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {branchSubItems.map(sub => (
+                              <SidebarMenuSubItem key={sub.title}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={pathname + (typeof window !== 'undefined' ? window.location.search : '') === sub.href}
+                                >
+                                  <Link href={sub.href}>
+                                    <sub.icon className="w-3.5 h-3.5" />
+                                    <span>{sub.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            ))}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  )
+                }
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

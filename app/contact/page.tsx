@@ -8,21 +8,47 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle, Mail, Phone, MapPin, Clock } from "lucide-react"
+import { CheckCircle, Mail, Phone, MapPin, Clock, Loader2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
+
+const emptyForm = { name: "", email: "", phone: "", subject: "", message: "" }
 
 export default function ContactPage() {
+  const supabase = createClient()
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState(emptyForm)
 
-  function handleSubmit(e: React.FormEvent) {
+  const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(p => ({ ...p, [field]: e.target.value }))
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!form.subject) { toast.error("Please select a subject."); return }
+    setLoading(true)
+    const { error } = await supabase.from("contact_messages").insert({
+      name:    form.name.trim(),
+      email:   form.email.trim(),
+      phone:   form.phone.trim() || null,
+      subject: form.subject,
+      message: form.message.trim(),
+    })
+    setLoading(false)
+    if (error) { toast.error("Failed to send message. Please try again."); return }
     setSubmitted(true)
+    setForm(emptyForm)
   }
 
   return (
     <SiteLayout>
       {/* Hero */}
-      <section className="pt-24 pb-16 lg:pt-32 lg:pb-20 bg-gradient-to-br from-[var(--church-primary)] to-[var(--church-primary-deep)]">
-        <div className="container mx-auto px-4 text-center text-white">
+      <section
+        className="pt-24 pb-16 lg:pt-32 lg:pb-20 relative"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80')", backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container mx-auto px-4 text-center text-white relative z-10">
           <h1 className="text-4xl lg:text-5xl font-bold mb-4 text-balance">Contact Us</h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto text-pretty">
             We would love to hear from you. Reach out to us for any questions, prayer needs, or to learn more about our church.
@@ -62,20 +88,20 @@ export default function ContactPage() {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="name">Full Name *</Label>
-                          <Input id="name" placeholder="Juan dela Cruz" required />
+                          <Input id="name" placeholder="Juan dela Cruz" required value={form.name} onChange={set("name")} />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="email">Email Address *</Label>
-                          <Input id="email" type="email" placeholder="you@email.com" required />
+                          <Input id="email" type="email" placeholder="you@email.com" required value={form.email} onChange={set("email")} />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="+63 9XX XXX XXXX" />
+                        <Input id="phone" type="tel" placeholder="+63 9XX XXX XXXX" value={form.phone} onChange={set("phone")} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="subject">Subject *</Label>
-                        <Select required>
+                        <Select required value={form.subject} onValueChange={v => setForm(p => ({ ...p, subject: v }))}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a subject" />
                           </SelectTrigger>
@@ -98,14 +124,17 @@ export default function ContactPage() {
                           placeholder="Write your message here..."
                           rows={6}
                           required
+                          value={form.message}
+                          onChange={set("message")}
                         />
                       </div>
                       <Button
                         type="submit"
                         size="lg"
+                        disabled={loading}
                         className="w-full bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white font-semibold"
                       >
-                        Send Message
+                        {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sending...</> : "Send Message"}
                       </Button>
                     </form>
                   </CardContent>

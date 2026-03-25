@@ -15,13 +15,52 @@ export default function CounselingPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [counselingType, setCounselingType] = useState("face-to-face")
+  const [isMember, setIsMember] = useState("yes")
+  const [preferredTime, setPreferredTime] = useState("")
+
+  const [formData, setFormData] = useState({
+    fullName: "",
+    contact: "",
+    address: "",
+    facebook: "",
+    date: "",
+    concern: ""
+  })
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target
+    setFormData(prev => ({ ...prev, [id]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    setIsSubmitted(true)
+    
+    try {
+      const res = await fetch("/api/counseling", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          contact_number: formData.contact,
+          address: formData.address,
+          facebook_account: formData.facebook,
+          preferred_date: formData.date,
+          preferred_time: preferredTime,
+          counseling_type: counselingType,
+          is_member: isMember === "yes",
+          concern: formData.concern
+        })
+      })
+
+      if (!res.ok) throw new Error("Failed to submit request")
+      setIsSubmitted(true)
+    } catch (error) {
+      console.error("Submission error:", error)
+      alert("Something went wrong. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isSubmitted) {
@@ -56,12 +95,13 @@ export default function CounselingPage() {
   return (
     <SiteLayout>
       {/* Hero Section */}
-      <section className="pt-24 pb-12 lg:pt-32 lg:pb-16 bg-gradient-to-br from-[var(--church-primary)] to-[var(--church-primary-deep)]">
-        <div className="container mx-auto px-4">
+      <section
+        className="pt-24 pb-12 lg:pt-32 lg:pb-16 relative"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1758273241078-8eec353836be?w=1920&q=80')", backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
-              <MessageCircle className="w-10 h-10" />
-            </div>
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">Counseling</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Need someone to talk to? Our pastoral team is here to listen, guide, and pray with you.
@@ -90,6 +130,8 @@ export default function CounselingPage() {
                         id="fullName" 
                         placeholder="Your full name" 
                         required
+                        value={formData.fullName}
+                        onChange={handleInputChange}
                         className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)]"
                       />
                     </div>
@@ -100,6 +142,8 @@ export default function CounselingPage() {
                         type="tel" 
                         placeholder="+63 912 345 6789" 
                         required
+                        value={formData.contact}
+                        onChange={handleInputChange}
                         className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)]"
                       />
                     </div>
@@ -110,6 +154,8 @@ export default function CounselingPage() {
                     <Input 
                       id="address" 
                       placeholder="Your address" 
+                      value={formData.address}
+                      onChange={handleInputChange}
                       className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)]"
                     />
                   </div>
@@ -119,6 +165,8 @@ export default function CounselingPage() {
                     <Input 
                       id="facebook" 
                       placeholder="facebook.com/yourprofile" 
+                      value={formData.facebook}
+                      onChange={handleInputChange}
                       className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)]"
                     />
                   </div>
@@ -130,12 +178,14 @@ export default function CounselingPage() {
                         id="date" 
                         type="date" 
                         required
+                        value={formData.date}
+                        onChange={handleInputChange}
                         className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)]"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="time">Preferred Time *</Label>
-                      <Select>
+                      <Select value={preferredTime} onValueChange={setPreferredTime} required>
                         <SelectTrigger className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)]">
                           <SelectValue placeholder="Select time" />
                         </SelectTrigger>
@@ -189,7 +239,7 @@ export default function CounselingPage() {
 
                   <div className="space-y-3">
                     <Label>Are you a church member? *</Label>
-                    <RadioGroup defaultValue="yes" className="flex gap-6">
+                    <RadioGroup value={isMember} onValueChange={setIsMember} className="flex gap-6">
                       <div className="flex items-center gap-2">
                         <RadioGroupItem value="yes" id="member-yes" />
                         <Label htmlFor="member-yes" className="cursor-pointer">Yes</Label>
@@ -208,6 +258,8 @@ export default function CounselingPage() {
                       placeholder="Please briefly describe the topic or concern you would like to discuss..." 
                       rows={4}
                       required
+                      value={formData.concern}
+                      onChange={handleInputChange}
                       className="border-border focus:border-[var(--church-primary)] focus:ring-[var(--church-primary)] resize-none"
                     />
                   </div>

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Menu, X, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,7 +56,8 @@ const navigation = [
     children: [
       { name: "Prayer Request", href: "/prayer-request" },
       { name: "Counseling", href: "/counseling" },
-      { name: "Feedback & Testimony", href: "/feedback" },
+      { name: "Testimony", href: "/testimony" },
+      { name: "Feedback", href: "/feedback" },
       { name: "Missions Training", href: "/missions-training" },
     ],
   },
@@ -90,22 +91,26 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-background/95 backdrop-blur-md shadow-md"
+          ? "bg-white/95 backdrop-blur-md shadow-md"
           : "bg-transparent"
       )}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[var(--church-primary)] flex items-center justify-center">
-              <span className="text-white font-bold text-sm lg:text-base">AB</span>
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image 
+              src="/images/abcmi-logo.png" 
+              alt="Arise and Build For Christ Ministries" 
+              width={50} 
+              height={50}
+              className="rounded-full"
+            />
             <div className="hidden sm:block">
-              <p className="font-bold text-sm lg:text-base text-foreground leading-tight">
+              <p className={cn("font-bold text-sm lg:text-base leading-tight", isScrolled ? "text-black" : "text-white")}>
                 Arise and Build
               </p>
-              <p className="text-xs text-muted-foreground">For Christ Ministries</p>
+              <p className={cn("text-xs", isScrolled ? "text-black/70" : "text-white/70")}>For Christ Ministries</p>
             </div>
           </Link>
 
@@ -116,10 +121,10 @@ export function Header() {
                 {item.children ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="flex items-center gap-1 text-foreground hover:text-[var(--church-primary)] hover:bg-[var(--church-light-blue)]">
+                      <button className={cn("flex items-center gap-1 px-3 py-2 rounded-md transition-colors", isScrolled ? "text-black hover:text-[var(--church-primary)]" : "text-white hover:text-[var(--church-primary)]")}>
                         {item.name}
                         <ChevronDown className="h-4 w-4" />
-                      </Button>
+                      </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="bg-background border-border">
                       {item.children.map((child) => (
@@ -132,10 +137,8 @@ export function Header() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Link href={item.href}>
-                    <Button variant="ghost" className="text-foreground hover:text-[var(--church-primary)] hover:bg-[var(--church-light-blue)]">
-                      {item.name}
-                    </Button>
+                  <Link href={item.href} className={cn("px-3 py-2 rounded-md transition-colors block", isScrolled ? "text-black hover:text-[var(--church-primary)]" : "text-white hover:text-[var(--church-primary)]")}>
+                    {item.name}
                   </Link>
                 )}
               </div>
@@ -144,27 +147,21 @@ export function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden lg:flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="ghost" className="text-foreground hover:text-[var(--church-primary)]">
-                Log In
-              </Button>
+            <Link href="/login" className={cn("px-3 py-2 rounded-md transition-colors", isScrolled ? "text-black hover:text-[var(--church-primary)]" : "text-white hover:text-[var(--church-primary)]")}>
+              Log In
             </Link>
-            <Link href="/register">
-              <Button className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white">
-                Join Us
-              </Button>
+            <Link href="/register" className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white px-4 py-2 rounded-md transition-colors">
+              Join Us
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
+          <button
+            className={cn("lg:hidden transition-colors", isScrolled ? "text-black hover:text-[var(--church-primary)]" : "text-white hover:text-[var(--church-primary)]")}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -176,12 +173,12 @@ export function Header() {
               <div key={item.name}>
                 {item.children ? (
                   <div className="space-y-1">
-                    <span className="block px-4 py-2 font-medium text-foreground">{item.name}</span>
+                    <span className={cn("block px-4 py-2 font-medium", isScrolled ? "text-black" : "text-white")}>{item.name}</span>
                     {item.children.map((child) => (
                       <Link
                         key={child.name}
                         href={child.href}
-                        className="block px-6 py-2 text-muted-foreground hover:text-[var(--church-primary)]"
+                        className={cn("block px-6 py-2 hover:text-[var(--church-primary)]", isScrolled ? "text-black/70" : "text-white/70")}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {child.name}
@@ -191,7 +188,7 @@ export function Header() {
                 ) : (
                   <Link
                     href={item.href}
-                    className="block px-4 py-2 font-medium text-foreground hover:text-[var(--church-primary)]"
+                    className={cn("block px-4 py-2 font-medium hover:text-[var(--church-primary)]", isScrolled ? "text-black" : "text-white")}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}
@@ -200,13 +197,11 @@ export function Header() {
               </div>
             ))}
             <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full">Log In</Button>
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className={cn("text-center px-4 py-2 rounded-md border hover:text-[var(--church-primary)]", isScrolled ? "text-black border-black/20" : "text-white border-white/20")}>
+                Log In
               </Link>
-              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button className="w-full bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white">
-                  Join Us
-                </Button>
+              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white px-4 py-2 rounded-md">
+                Join Us
               </Link>
             </div>
           </nav>

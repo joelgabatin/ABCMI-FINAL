@@ -9,11 +9,11 @@ async function getChurchContent(): Promise<ChurchContent> {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.ABCMI_SERVICE_KEY!
     )
 
     const [settingsRes, coreValuesRes, beliefsRes, historyRes] = await Promise.all([
-      supabase.from('church_VMD').select('*').eq('id', 1).single(),
+      supabase.from('church_vmd').select('*').eq('id', 1).single(),
       supabase.from('church_core_values').select('*').order('sort_order'),
       supabase.from('church_beliefs').select('*').order('sort_order'),
       supabase.from('church_history').select('*').order('sort_order'),

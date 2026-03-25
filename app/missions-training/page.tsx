@@ -64,28 +64,10 @@ export default function MissionsTrainingPage() {
           style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "28px 28px" }}
         />
         <div className="container mx-auto px-4 text-center text-white relative">
-          <Badge className="bg-[var(--church-gold)] text-[var(--church-primary-deep)] border-none mb-5 text-sm px-4 py-1 font-semibold">
-            ABCMI Training Programs
-          </Badge>
           <h1 className="text-4xl lg:text-5xl font-bold mb-4 text-balance">Missions Training</h1>
           <p className="text-xl text-white/90 max-w-2xl mx-auto text-pretty">
             To teach, train, and equip strong faithful servants to establish local and house churches — relationally joined together to the Holy Spirit in fulfilling the God-given vision.
           </p>
-        </div>
-      </section>
-
-      {/* Stats bar */}
-      <section className="bg-[var(--church-primary-deep)] border-t border-white/10">
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-3xl mx-auto">
-            {stats.map((s, i) => (
-              <div key={i} className="text-center text-white">
-                <s.icon className="w-6 h-6 mx-auto mb-1 opacity-80" />
-                <p className="text-2xl font-bold">{s.value}</p>
-                <p className="text-white/70 text-xs">{s.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

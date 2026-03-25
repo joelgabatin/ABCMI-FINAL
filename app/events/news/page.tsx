@@ -86,10 +86,6 @@ export default function NewsBlogPage() {
       <section className="pt-24 pb-12 lg:pt-32 lg:pb-16 bg-gradient-to-br from-[var(--church-primary)] to-[var(--church-primary-deep)]">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-sm font-medium mb-6">
-              <Tag className="w-4 h-4" />
-              News &amp; Blog
-            </div>
             <h1 className="text-4xl lg:text-5xl font-bold mb-4 text-balance">Church News &amp; Updates</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto text-pretty">
               Stay informed about what God is doing through ABCMI — from local outreach to global missions.

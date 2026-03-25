@@ -16,53 +16,48 @@ interface PrayerRequest {
   id: number
   name: string
   request: string
-  category: string
   submittedAt: string
-  status: "pending" | "prayed" | "answered"
+  status: "pending" | "inprayer" | "interceded"
   response: string
   isAnonymous: boolean
 }
 
 const initialRequests: PrayerRequest[] = [
-  { id: 1, name: "Anna Bautista", request: "Please pray for my mother who is hospitalized with pneumonia. We trust in God's healing power.", category: "Healing", submittedAt: "2024-03-20", status: "pending", response: "", isAnonymous: false },
-  { id: 2, name: "Anonymous", request: "I am struggling with financial difficulties. Please pray that God will provide for our family's needs.", category: "Provision", submittedAt: "2024-03-19", status: "pending", response: "", isAnonymous: true },
-  { id: 3, name: "Pedro Villanueva", request: "Praying for guidance in my career. I have two job offers and need God's wisdom in choosing.", category: "Guidance", submittedAt: "2024-03-18", status: "prayed", response: "We are praying for God's wisdom and perfect will to be revealed to you. Trust in the Lord with all your heart.", isAnonymous: false },
-  { id: 4, name: "Lena Torres", request: "Prayer for my marriage. We are going through a difficult season and need God's restoration.", category: "Family", submittedAt: "2024-03-17", status: "prayed", response: "We are interceding for your marriage. God is the restorer of broken things and He loves your family.", isAnonymous: false },
-  { id: 5, name: "Anonymous", request: "Please pray for my salvation of my husband who has not yet accepted Christ.", category: "Salvation", submittedAt: "2024-03-15", status: "answered", response: "Praise God! We rejoice with you. Continue to intercede for him.", isAnonymous: true },
-  { id: 6, name: "Joy Salazar", request: "Pray for strength and endurance. I feel spiritually dry and need a fresh touch from God.", category: "Spiritual Growth", submittedAt: "2024-03-14", status: "answered", response: "God's mercies are new every morning. We prayed for a fresh outpouring of the Holy Spirit over you.", isAnonymous: false },
+  { id: 1, name: "Anna Bautista", request: "Please pray for my mother who is hospitalized with pneumonia. We trust in God's healing power.", submittedAt: "2024-03-20", status: "pending", response: "", isAnonymous: false },
+  { id: 2, name: "Anonymous", request: "I am struggling with financial difficulties. Please pray that God will provide for our family's needs.", submittedAt: "2024-03-19", status: "pending", response: "", isAnonymous: true },
+  { id: 3, name: "Pedro Villanueva", request: "Praying for guidance in my career. I have two job offers and need God's wisdom in choosing.", submittedAt: "2024-03-18", status: "inprayer", response: "We are praying for God's wisdom and perfect will to be revealed to you. Trust in the Lord with all your heart.", isAnonymous: false },
+  { id: 4, name: "Lena Torres", request: "Prayer for my marriage. We are going through a difficult season and need God's restoration.", submittedAt: "2024-03-17", status: "inprayer", response: "We are interceding for your marriage. God is the restorer of broken things and He loves your family.", isAnonymous: false },
+  { id: 5, name: "Anonymous", request: "Please pray for my salvation of my husband who has not yet accepted Christ.", submittedAt: "2024-03-15", status: "interceded", response: "Praise God! We rejoice with you. Continue to intercede for him.", isAnonymous: true },
+  { id: 6, name: "Joy Salazar", request: "Pray for strength and endurance. I feel spiritually dry and need a fresh touch from God.", submittedAt: "2024-03-14", status: "interceded", response: "God's mercies are new every morning. We prayed for a fresh outpouring of the Holy Spirit over you.", isAnonymous: false },
 ]
-
-const categories = ["All", "Healing", "Provision", "Guidance", "Family", "Salvation", "Spiritual Growth", "Other"]
 
 export default function PastorPrayersPage() {
   const [requests, setRequests] = useState<PrayerRequest[]>(initialRequests)
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("All")
   const [respondDialog, setRespondDialog] = useState<PrayerRequest | null>(null)
   const [responseText, setResponseText] = useState("")
 
   const sendResponse = () => {
     if (!respondDialog) return
     setRequests(prev => prev.map(r => r.id === respondDialog.id
-      ? { ...r, response: responseText, status: r.status === "pending" ? "prayed" : r.status }
+      ? { ...r, response: responseText, status: r.status === "pending" ? "inprayer" : r.status }
       : r
     ))
     setRespondDialog(null)
     setResponseText("")
   }
 
-  const markAnswered = (id: number) => setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "answered" } : r))
+  const markInterceded = (id: number) => setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "interceded" } : r))
 
-  const filtered = (tab: "pending" | "prayed" | "answered" | "all") =>
+  const filtered = (tab: "pending" | "inprayer" | "interceded" | "all") =>
     requests
       .filter(r => tab === "all" || r.status === tab)
-      .filter(r => categoryFilter === "All" || r.category === categoryFilter)
       .filter(r => r.request.toLowerCase().includes(search.toLowerCase()) || (!r.isAnonymous && r.name.toLowerCase().includes(search.toLowerCase())))
 
   const statusBadge = (status: PrayerRequest["status"]) => {
     if (status === "pending") return <Badge className="bg-[var(--church-gold)]/15 text-[var(--church-gold)] border-[var(--church-gold)]/30">Pending</Badge>
-    if (status === "prayed") return <Badge className="bg-[var(--church-primary)]/10 text-[var(--church-primary)] border-[var(--church-primary)]/20">Prayed</Badge>
-    return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Answered</Badge>
+    if (status === "inprayer") return <Badge className="bg-[var(--church-primary)]/10 text-[var(--church-primary)] border-[var(--church-primary)]/20">In Prayer</Badge>
+    return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Interceded</Badge>
   }
 
   const PrayerCard = ({ req }: { req: PrayerRequest }) => (
@@ -78,7 +73,6 @@ export default function PastorPrayersPage() {
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <p className="font-medium text-foreground text-sm">{req.isAnonymous ? "Anonymous" : req.name}</p>
               {statusBadge(req.status)}
-              <Badge variant="outline" className="text-xs">{req.category}</Badge>
             </div>
             <p className="text-sm text-foreground leading-relaxed mt-1">"{req.request}"</p>
             <p className="text-xs text-muted-foreground mt-1">Submitted: {req.submittedAt}</p>
@@ -93,9 +87,9 @@ export default function PastorPrayersPage() {
             <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => { setRespondDialog(req); setResponseText(req.response) }}>
               <Send className="w-3 h-3" /> {req.response ? "Edit" : "Respond"}
             </Button>
-            {req.status === "prayed" && (
-              <Button size="sm" className="h-7 text-xs gap-1 bg-emerald-500 hover:bg-emerald-600 text-white" onClick={() => markAnswered(req.id)}>
-                <Check className="w-3 h-3" /> Answered
+            {req.status === "inprayer" && (
+              <Button size="sm" className="h-7 text-xs gap-1 bg-emerald-500 hover:bg-emerald-600 text-white" onClick={() => markInterceded(req.id)}>
+                <Check className="w-3 h-3" /> Interceded
               </Button>
             )}
           </div>
@@ -116,8 +110,8 @@ export default function PastorPrayersPage() {
         <div className="grid grid-cols-3 gap-4 mb-6">
           {[
             { label: "Pending", value: requests.filter(r => r.status === "pending").length, color: "text-[var(--church-gold)]", bg: "bg-[var(--church-gold)]/15" },
-            { label: "Prayed For", value: requests.filter(r => r.status === "prayed").length, color: "text-[var(--church-primary)]", bg: "bg-[var(--church-primary)]/10" },
-            { label: "Answered", value: requests.filter(r => r.status === "answered").length, color: "text-emerald-600", bg: "bg-emerald-500/10" },
+            { label: "In Prayer", value: requests.filter(r => r.status === "inprayer").length, color: "text-[var(--church-primary)]", bg: "bg-[var(--church-primary)]/10" },
+            { label: "Interceded", value: requests.filter(r => r.status === "interceded").length, color: "text-emerald-600", bg: "bg-emerald-500/10" },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-4 flex items-center gap-3">
@@ -139,14 +133,6 @@ export default function PastorPrayersPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input placeholder="Search requests..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
-          <div className="flex gap-2 flex-wrap">
-            {categories.map(cat => (
-              <button key={cat} onClick={() => setCategoryFilter(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${categoryFilter === cat ? "bg-[var(--church-primary)] text-white border-[var(--church-primary)]" : "bg-background text-muted-foreground border-border hover:border-[var(--church-primary)]/50"}`}>
-                {cat}
-              </button>
-            ))}
-          </div>
         </div>
 
         <Tabs defaultValue="pending">
@@ -157,12 +143,12 @@ export default function PastorPrayersPage() {
                 <Badge className="ml-1 bg-rose-500 text-white text-xs px-1.5 py-0">{requests.filter(r => r.status === "pending").length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="prayed" className="gap-2"><Heart className="w-4 h-4" /> Prayed For</TabsTrigger>
-            <TabsTrigger value="answered" className="gap-2"><Check className="w-4 h-4" /> Answered</TabsTrigger>
+            <TabsTrigger value="inprayer" className="gap-2"><Heart className="w-4 h-4" /> In Prayer</TabsTrigger>
+            <TabsTrigger value="interceded" className="gap-2"><Check className="w-4 h-4" /> Interceded</TabsTrigger>
             <TabsTrigger value="all" className="gap-2">All</TabsTrigger>
           </TabsList>
 
-          {(["pending", "prayed", "answered", "all"] as const).map(tab => (
+          {(["pending", "inprayer", "interceded", "all"] as const).map(tab => (
             <TabsContent key={tab} value={tab}>
               <div className="space-y-3">
                 {filtered(tab).map(req => <PrayerCard key={req.id} req={req} />)}

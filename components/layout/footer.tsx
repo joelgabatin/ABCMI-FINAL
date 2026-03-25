@@ -13,8 +13,10 @@ const quickLinks = [
 const connectLinks = [
   { name: "Prayer Request", href: "/prayer-request" },
   { name: "Counseling", href: "/counseling" },
+  { name: "Testimony", href: "/testimony" },
   { name: "Bible Study", href: "/bible-study" },
-  { name: "Daily Devotional", href: "/bible-reading" },
+  { name: "Bible Reading", href: "/bible-reading" },
+  { name: "Daily Devotional", href: "/devotional" },
   { name: "Feedback", href: "/feedback" },
 ]
 

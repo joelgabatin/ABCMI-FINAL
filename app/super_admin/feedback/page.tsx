@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   MessageSquarePlus, Star, Search, ChevronDown, Trash2,
-  CheckCircle, Clock, RotateCcw, Reply, X
+  CheckCircle, Clock, RotateCcw, Reply, Loader2, AlertCircle, Ban
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,40 +23,33 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import { toast } from "sonner"
 
-type FeedbackStatus = "new" | "under_review" | "acknowledged" | "resolved"
+type FeedbackStatus = "new" | "under_review" | "acknowledged" | "resolved" | "spam"
 type FeedbackType = "General Feedback" | "Service Improvement" | "Pastoral Care" | "Facilities" | "Programs" | "Other"
 
 interface Feedback {
   id: number
   author: string
+  email?: string | null
   branch: string
   type: FeedbackType
   subject: string
   message: string
   rating: number
-  date: string
+  created_at: string
   status: FeedbackStatus
   anonymous: boolean
-  wantsResponse: boolean
-  adminReply?: string
+  wants_response: boolean
+  admin_reply?: string | null
 }
-
-const initialFeedback: Feedback[] = [
-  { id: 1, author: "Elena Pascual", branch: "ABCMI Main Church, Baguio City", type: "Service Improvement", subject: "Sound system during worship", message: "The audio quality during worship service has been inconsistent over the past few weeks. Sometimes the microphones produce feedback and it's quite distracting during the message. I think it would greatly improve the worship experience if this could be looked into.", rating: 3, date: "Mar 19, 2026", status: "under_review", anonymous: false, wantsResponse: true, adminReply: "" },
-  { id: 2, author: "Anonymous", branch: "Camp 8, Baguio City", type: "Pastoral Care", subject: "More pastoral visits for elderly members", message: "We have several elderly members who can no longer attend Sunday service regularly. It would be a tremendous blessing if the pastoral team could schedule regular home visits for them. They often feel disconnected from the church community.", rating: 4, date: "Mar 17, 2026", status: "acknowledged", anonymous: true, wantsResponse: false, adminReply: "Thank you for this thoughtful suggestion. We have shared this with our pastoral team and will be organizing a visitation schedule for our elderly members beginning next month." },
-  { id: 3, author: "Robert Liwanag", branch: "Kias, Baguio City", type: "Programs", subject: "Request for a seniors ministry", message: "Our congregation has a growing number of members aged 60 and above, but we don't have a dedicated ministry or fellowship group for them. A seniors ministry with relevant Bible studies and social activities would be very meaningful.", rating: 5, date: "Mar 14, 2026", status: "new", anonymous: false, wantsResponse: true },
-  { id: 4, author: "Maribel Corpuz", branch: "Dalic, Bontoc, Mt. Province", type: "Facilities", subject: "Restroom maintenance needed", message: "The restroom facilities at our branch need some attention. They are often not clean, and some fixtures are not functioning properly. A proper maintenance schedule would make a big difference especially for guests and visitors.", rating: 2, date: "Mar 12, 2026", status: "resolved", anonymous: false, wantsResponse: true, adminReply: "We sincerely apologize for the inconvenience. We have assigned a maintenance team to perform repairs and have set up a regular cleaning schedule. Thank you for bringing this to our attention." },
-  { id: 5, author: "Anonymous", branch: "Villa Conchita, Manabo, Abra", type: "General Feedback", subject: "Grateful for the church community", message: "I just wanted to say how thankful I am for this church. During a very difficult season in my life, the members rallied around my family with support, prayer, and practical help. This church truly lives out the love of Christ.", rating: 5, date: "Mar 10, 2026", status: "acknowledged", anonymous: true, wantsResponse: false, adminReply: "Praise God! This is exactly what we strive to be as a church family. Thank you so much for sharing this encouragement with us." },
-  { id: 6, author: "Aurelio Bautista", branch: "San Juan, Abra", type: "Service Improvement", subject: "Suggestion for live streaming services", message: "Many of our members who travel for work or are ill cannot attend in person. A live stream of Sunday services on Facebook or YouTube would allow them to stay connected and continue to be spiritually fed even from a distance.", rating: 4, date: "Mar 7, 2026", status: "new", anonymous: false, wantsResponse: true },
-  { id: 7, author: "Petra Villanueva", branch: "Casacgudan, Manabo, Abra", type: "Pastoral Care", subject: "Pre-marriage counseling availability", message: "My fiance and I are engaged and are looking for pre-marriage counseling. We inquired at the church office but were told the schedule was full. Is there a way to expand counseling availability, perhaps with other trained counselors?", rating: 3, date: "Mar 3, 2026", status: "resolved", anonymous: false, wantsResponse: true, adminReply: "We have spoken with two additional qualified members of our pastoral team and they are now available for pre-marital counseling. Please contact the church office to schedule your sessions." },
-]
 
 const statusConfig: Record<FeedbackStatus, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
   new: { label: "New", color: "bg-[var(--church-primary)]/10 text-[var(--church-primary)] border-[var(--church-primary)]/20", icon: MessageSquarePlus },
   under_review: { label: "Under Review", color: "bg-orange-500/10 text-orange-600 border-orange-500/20", icon: Clock },
   acknowledged: { label: "Acknowledged", color: "bg-[var(--church-gold)]/15 text-[var(--church-gold)] border-[var(--church-gold)]/30", icon: CheckCircle },
   resolved: { label: "Resolved", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle },
+  spam: { label: "Spam", color: "bg-rose-500/10 text-rose-600 border-rose-500/20", icon: AlertCircle },
 }
 
 const typeColors: Record<FeedbackType, string> = {
@@ -76,26 +69,88 @@ const StarRating = ({ rating }: { rating: number }) => (
   </div>
 )
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+}
+
 export default function AdminFeedbackPage() {
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>(initialFeedback)
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [viewItem, setViewItem] = useState<Feedback | null>(null)
   const [replyText, setReplyText] = useState("")
+  const [replyLoading, setReplyLoading] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
-  const updateStatus = (id: number, status: FeedbackStatus) => {
+  const fetchFeedbacks = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch("/api/feedback")
+      if (!res.ok) throw new Error("Failed to fetch")
+      const data = await res.json()
+      setFeedbacks(data)
+    } catch {
+      toast.error("Failed to load feedback")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchFeedbacks() }, [fetchFeedbacks])
+
+  const updateStatus = async (id: number, status: FeedbackStatus) => {
+    // Optimistic update
     setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status } : f))
+    if (viewItem?.id === id) setViewItem(prev => prev ? { ...prev, status } : null)
+
+    const res = await fetch(`/api/feedback/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    })
+    if (!res.ok) {
+      toast.error("Failed to update status")
+      fetchFeedbacks() // revert
+    } else {
+      toast.success(`Marked as ${statusConfig[status].label}`)
+    }
   }
 
-  const submitReply = (id: number) => {
-    setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, adminReply: replyText, status: "acknowledged" } : f))
-    if (viewItem?.id === id) setViewItem(prev => prev ? { ...prev, adminReply: replyText, status: "acknowledged" } : null)
-    setReplyText("")
+  const submitReply = async (id: number) => {
+    setReplyLoading(true)
+    const res = await fetch(`/api/feedback/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admin_reply: replyText }),
+    })
+    if (!res.ok) {
+      toast.error("Failed to send response")
+    } else {
+      setFeedbacks(prev => prev.map(f =>
+        f.id === id ? { ...f, admin_reply: replyText, status: "acknowledged" } : f
+      ))
+      if (viewItem?.id === id) {
+        setViewItem(prev => prev ? { ...prev, admin_reply: replyText, status: "acknowledged" } : null)
+      }
+      setReplyText("")
+      setViewItem(null)
+      toast.success("Response sent")
+    }
+    setReplyLoading(false)
   }
 
-  const deleteFeedback = (id: number) => {
-    setFeedbacks(prev => prev.filter(f => f.id !== id))
+  const deleteFeedback = async (id: number) => {
+    setDeleteLoading(true)
+    const res = await fetch(`/api/feedback/${id}`, { method: "DELETE" })
+    if (!res.ok) {
+      toast.error("Failed to delete feedback")
+    } else {
+      setFeedbacks(prev => prev.filter(f => f.id !== id))
+      toast.success("Feedback deleted")
+    }
     setDeleteId(null)
+    setDeleteLoading(false)
   }
 
   const filtered = (tab: "all" | FeedbackStatus) =>
@@ -107,7 +162,9 @@ export default function AdminFeedbackPage() {
       return matchTab && matchSearch
     })
 
-  const avgRating = (feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length).toFixed(1)
+  const avgRating = feedbacks.length
+    ? (feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length).toFixed(1)
+    : "—"
 
   const stats = [
     { label: "Total", value: feedbacks.length, color: "text-[var(--church-primary)]", bg: "bg-[var(--church-primary)]/10" },
@@ -127,7 +184,10 @@ export default function AdminFeedbackPage() {
                 <p className="font-semibold text-sm text-foreground">
                   {f.anonymous ? "Anonymous" : f.author}
                 </p>
-                {f.wantsResponse && (
+                {f.email && !f.anonymous && (
+                  <p className="text-xs text-muted-foreground truncate">({f.email})</p>
+                )}
+                {f.wants_response && (
                   <Badge variant="outline" className="text-xs border-[var(--church-primary)]/30 text-[var(--church-primary)]">
                     Wants Response
                   </Badge>
@@ -147,7 +207,7 @@ export default function AdminFeedbackPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => { setViewItem(f); setReplyText(f.adminReply || "") }}>
+                  <DropdownMenuItem onClick={() => { setViewItem(f); setReplyText(f.admin_reply || "") }}>
                     <Reply className="w-4 h-4 mr-2" /> View & Reply
                   </DropdownMenuItem>
                   {f.status === "new" && (
@@ -155,14 +215,29 @@ export default function AdminFeedbackPage() {
                       <Clock className="w-4 h-4 mr-2" /> Mark Under Review
                     </DropdownMenuItem>
                   )}
+                  {f.status !== "acknowledged" && f.status !== "resolved" && (
+                    <DropdownMenuItem onClick={() => updateStatus(f.id, "acknowledged")} className="text-[var(--church-gold)]">
+                      <CheckCircle className="w-4 h-4 mr-2" /> Mark Acknowledged
+                    </DropdownMenuItem>
+                  )}
                   {f.status !== "resolved" && (
                     <DropdownMenuItem onClick={() => updateStatus(f.id, "resolved")} className="text-emerald-600">
                       <CheckCircle className="w-4 h-4 mr-2" /> Mark Resolved
                     </DropdownMenuItem>
                   )}
+                  {f.status !== "spam" && (
+                    <DropdownMenuItem onClick={() => updateStatus(f.id, "spam")} className="text-rose-600">
+                      <Ban className="w-4 h-4 mr-2" /> Mark as Spam
+                    </DropdownMenuItem>
+                  )}
                   {f.status === "resolved" && (
                     <DropdownMenuItem onClick={() => updateStatus(f.id, "new")}>
                       <RotateCcw className="w-4 h-4 mr-2" /> Reopen
+                    </DropdownMenuItem>
+                  )}
+                  {f.status === "spam" && (
+                    <DropdownMenuItem onClick={() => updateStatus(f.id, "new")}>
+                      <RotateCcw className="w-4 h-4 mr-2" /> Not Spam (Reopen)
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem onClick={() => setDeleteId(f.id)} className="text-destructive focus:text-destructive">
@@ -176,28 +251,34 @@ export default function AdminFeedbackPage() {
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <Badge variant="secondary" className={`text-xs ${typeColors[f.type]}`}>{f.type}</Badge>
             <StarRating rating={f.rating} />
-            <span className="text-xs text-muted-foreground ml-auto">{f.date}</span>
+            <span className="text-xs text-muted-foreground ml-auto">{formatDate(f.created_at)}</span>
           </div>
 
           <h3 className="font-semibold text-foreground mb-1">{f.subject}</h3>
           <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{f.message}</p>
 
-          {f.adminReply && (
+          {f.admin_reply && (
             <div className="mt-3 p-3 rounded-lg bg-[var(--church-primary)]/5 border border-[var(--church-primary)]/15">
               <p className="text-xs font-semibold text-[var(--church-primary)] mb-1">Admin Response</p>
-              <p className="text-xs text-muted-foreground line-clamp-2">{f.adminReply}</p>
+              <p className="text-xs text-muted-foreground line-clamp-2">{f.admin_reply}</p>
             </div>
           )}
 
           <div className="flex gap-2 mt-3 pt-3 border-t border-border">
             <Button size="sm" variant="outline" className="flex-1 h-7 text-xs"
-              onClick={() => { setViewItem(f); setReplyText(f.adminReply || "") }}>
-              <Reply className="w-3.5 h-3.5 mr-1" /> {f.adminReply ? "Edit Reply" : "Reply"}
+              onClick={() => { setViewItem(f); setReplyText(f.admin_reply || "") }}>
+              <Reply className="w-3.5 h-3.5 mr-1" /> {f.admin_reply ? "Edit Reply" : "Reply"}
             </Button>
-            {f.status !== "resolved" && (
+            {f.status !== "resolved" && f.status !== "spam" && (
               <Button size="sm" variant="outline" className="flex-1 h-7 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10"
                 onClick={() => updateStatus(f.id, "resolved")}>
                 <CheckCircle className="w-3.5 h-3.5 mr-1" /> Resolve
+              </Button>
+            )}
+            {f.status === "spam" && (
+              <Button size="sm" variant="outline" className="flex-1 h-7 text-xs text-rose-600 border-rose-500/30 hover:bg-rose-500/10"
+                onClick={() => updateStatus(f.id, "new")}>
+                <RotateCcw className="w-3.5 h-3.5 mr-1" /> Restore
               </Button>
             )}
           </div>
@@ -237,27 +318,34 @@ export default function AdminFeedbackPage() {
           <Input placeholder="Search feedback..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
 
-        <Tabs defaultValue="all">
-          <TabsList className="mb-6 flex flex-wrap h-auto gap-1">
-            <TabsTrigger value="all">All ({feedbacks.length})</TabsTrigger>
-            <TabsTrigger value="new">New ({feedbacks.filter(f => f.status === "new").length})</TabsTrigger>
-            <TabsTrigger value="under_review">Under Review ({feedbacks.filter(f => f.status === "under_review").length})</TabsTrigger>
-            <TabsTrigger value="acknowledged">Acknowledged ({feedbacks.filter(f => f.status === "acknowledged").length})</TabsTrigger>
-            <TabsTrigger value="resolved">Resolved ({feedbacks.filter(f => f.status === "resolved").length})</TabsTrigger>
-          </TabsList>
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--church-primary)]" />
+          </div>
+        ) : (
+          <Tabs defaultValue="all">
+            <TabsList className="mb-6 flex flex-wrap h-auto gap-1">
+              <TabsTrigger value="all">All ({feedbacks.length})</TabsTrigger>
+              <TabsTrigger value="new">New ({feedbacks.filter(f => f.status === "new").length})</TabsTrigger>
+              <TabsTrigger value="under_review">Under Review ({feedbacks.filter(f => f.status === "under_review").length})</TabsTrigger>
+              <TabsTrigger value="acknowledged">Acknowledged ({feedbacks.filter(f => f.status === "acknowledged").length})</TabsTrigger>
+              <TabsTrigger value="resolved">Resolved ({feedbacks.filter(f => f.status === "resolved").length})</TabsTrigger>
+              <TabsTrigger value="spam">Spam ({feedbacks.filter(f => f.status === "spam").length})</TabsTrigger>
+            </TabsList>
 
-          {(["all", "new", "under_review", "acknowledged", "resolved"] as const).map(tab => (
-            <TabsContent key={tab} value={tab}>
-              {filtered(tab).length === 0 ? (
-                <Card><CardContent className="p-12 text-center text-muted-foreground">No feedback found.</CardContent></Card>
-              ) : (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {filtered(tab).map(f => <FeedbackCard key={f.id} f={f} />)}
-                </div>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+            {(["all", "new", "under_review", "acknowledged", "resolved", "spam"] as const).map(tab => (
+              <TabsContent key={tab} value={tab}>
+                {filtered(tab).length === 0 ? (
+                  <Card><CardContent className="p-12 text-center text-muted-foreground">No feedback found.</CardContent></Card>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {filtered(tab).map(f => <FeedbackCard key={f.id} f={f} />)}
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
+        )}
 
         {/* Reply Dialog */}
         <Dialog open={!!viewItem} onOpenChange={open => !open && setViewItem(null)}>
@@ -267,7 +355,9 @@ export default function AdminFeedbackPage() {
                 <DialogHeader>
                   <DialogTitle>{viewItem.subject}</DialogTitle>
                   <DialogDescription>
-                    {viewItem.anonymous ? "Anonymous" : viewItem.author} — {viewItem.branch} — {viewItem.date}
+                    {viewItem.anonymous ? "Anonymous" : viewItem.author} 
+                    {viewItem.email && !viewItem.anonymous && ` (${viewItem.email})`} 
+                    — {viewItem.branch} — {formatDate(viewItem.created_at)}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -278,9 +368,31 @@ export default function AdminFeedbackPage() {
                       {statusConfig[viewItem.status].label}
                     </Badge>
                   </div>
+
+                  {/* Status change buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    {(["new", "under_review", "acknowledged", "resolved", "spam"] as FeedbackStatus[]).map(s => (
+                      <Button
+                        key={s}
+                        size="sm"
+                        variant={viewItem.status === s ? "default" : "outline"}
+                        className={`text-xs h-7 ${viewItem.status === s ? "bg-[var(--church-primary)] text-white" : ""}`}
+                        onClick={() => updateStatus(viewItem.id, s)}
+                        disabled={viewItem.status === s}
+                      >
+                        {statusConfig[s].label}
+                      </Button>
+                    ))}
+                  </div>
+
                   <p className="text-sm text-foreground leading-relaxed bg-muted/50 rounded-lg p-4">{viewItem.message}</p>
                   <div className="space-y-2">
-                    <Label>Admin Response {!viewItem.wantsResponse && <span className="text-xs text-muted-foreground">(member did not request a response)</span>}</Label>
+                    <Label>
+                      Admin Response{" "}
+                      {!viewItem.wants_response && (
+                        <span className="text-xs text-muted-foreground">(member did not request a response)</span>
+                      )}
+                    </Label>
                     <Textarea
                       rows={4}
                       placeholder="Write a response to this feedback..."
@@ -292,10 +404,11 @@ export default function AdminFeedbackPage() {
                     <Button variant="outline" className="flex-1" onClick={() => setViewItem(null)}>Cancel</Button>
                     <Button
                       className="flex-1 bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
-                      onClick={() => { submitReply(viewItem.id); setViewItem(null) }}
-                      disabled={!replyText.trim()}
+                      onClick={() => submitReply(viewItem.id)}
+                      disabled={!replyText.trim() || replyLoading}
                     >
-                      <Reply className="w-4 h-4 mr-2" /> Send Response
+                      {replyLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Reply className="w-4 h-4 mr-2" />}
+                      Send Response
                     </Button>
                   </div>
                 </div>
@@ -313,8 +426,12 @@ export default function AdminFeedbackPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className="bg-destructive hover:bg-destructive/90 text-white"
-                onClick={() => deleteId !== null && deleteFeedback(deleteId)}>
+              <AlertDialogAction
+                className="bg-destructive hover:bg-destructive/90 text-white"
+                onClick={() => deleteId !== null && deleteFeedback(deleteId)}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

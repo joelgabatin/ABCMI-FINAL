@@ -53,9 +53,6 @@ export default function ServicesPage() {
       <section className="pt-24 pb-12 lg:pt-32 lg:pb-16 bg-gradient-to-br from-[var(--church-primary)] to-[var(--church-primary-deep)]">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
-              <MapPin className="w-10 h-10" />
-            </div>
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">Service Schedules</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Find a worship location near you. We have outreaches across the Philippines and internationally.

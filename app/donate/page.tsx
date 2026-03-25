@@ -8,8 +8,12 @@ export default function DonatePage() {
   return (
     <SiteLayout>
       {/* Hero Section */}
-      <section className="pt-24 pb-12 lg:pt-32 lg:pb-16 bg-gradient-to-br from-[var(--church-primary)] to-[var(--church-primary-deep)]">
-        <div className="container mx-auto px-4">
+      <section
+        className="pt-24 pb-12 lg:pt-32 lg:pb-16 relative"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1490139753981-d33e0da2c26c?w=1920&q=80')", backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center text-white">
             <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
               <HandCoins className="w-10 h-10" />

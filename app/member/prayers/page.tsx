@@ -15,22 +15,22 @@ import {
 import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
 
 const myRequests = [
-  { id: 1, request: 'Praying for healing from my recurring back pain. Trusting God for full recovery.', date: 'Mar 19, 2026', status: 'in-prayer', category: 'Healing', isAnonymous: false, response: 'We are praying for your healing, dear brother/sister. Isaiah 53:5 declares that by His stripes we are healed!' },
-  { id: 2, request: 'Guidance on a big career decision. I need God\'s clear direction.', date: 'Mar 10, 2026', status: 'answered', category: 'Guidance', isAnonymous: false, response: 'Praise God for the answered prayer! We trust that He opened the right door for you.' },
-  { id: 3, request: 'Pray for my family members who are not yet believers.', date: 'Feb 28, 2026', status: 'in-prayer', category: 'Family', isAnonymous: true, response: null },
+  { id: 1, request: 'Praying for healing from my recurring back pain. Trusting God for full recovery.', date: 'Mar 19, 2026', status: 'inprayer', isAnonymous: false, response: 'We are praying for your healing, dear brother/sister. Isaiah 53:5 declares that by His stripes we are healed!' },
+  { id: 2, request: 'Guidance on a big career decision. I need God\'s clear direction.', date: 'Mar 10, 2026', status: 'interceded', isAnonymous: false, response: 'Praise God for the answered prayer! We trust that He opened the right door for you.' },
+  { id: 3, request: 'Pray for my family members who are not yet believers.', date: 'Feb 28, 2026', status: 'inprayer', isAnonymous: true, response: null },
 ]
 
 const communityWall = [
-  { id: 1, name: 'Maria S.', request: 'Pray for healing for my mother who has been ill.', date: '2 hours ago', category: 'Healing', prayerCount: 14 },
-  { id: 2, name: 'Anonymous', request: 'Going through financial hardship. Trusting God for provision.', date: '5 hours ago', category: 'Financial', prayerCount: 8 },
-  { id: 3, name: 'James T.', request: 'Praise report! Got the job I was praying for!', date: 'Yesterday', category: 'Thanksgiving', prayerCount: 32 },
-  { id: 4, name: 'Grace R.', request: 'Praying for my son to return to faith.', date: '2 days ago', category: 'Family', prayerCount: 21 },
+  { id: 1, name: 'Maria S.', request: 'Pray for healing for my mother who has been ill.', date: '2 hours ago', prayerCount: 14 },
+  { id: 2, name: 'Anonymous', request: 'Going through financial hardship. Trusting God for provision.', date: '5 hours ago', prayerCount: 8 },
+  { id: 3, name: 'James T.', request: 'Praise report! Got the job I was praying for!', date: 'Yesterday', prayerCount: 32 },
+  { id: 4, name: 'Grace R.', request: 'Praying for my son to return to faith.', date: '2 days ago', prayerCount: 21 },
 ]
 
 const statusConfig: Record<string, { label: string; className: string; icon: typeof Clock }> = {
   pending: { label: 'Pending', className: 'bg-[var(--church-gold)]/10 text-[var(--church-gold)]', icon: AlertCircle },
-  'in-prayer': { label: 'In Prayer', className: 'bg-[var(--church-primary)]/10 text-[var(--church-primary)]', icon: Heart },
-  answered: { label: 'Answered', className: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle },
+  'inprayer': { label: 'In Prayer', className: 'bg-[var(--church-primary)]/10 text-[var(--church-primary)]', icon: Heart },
+  'interceded': { label: 'Interceded', className: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle },
 }
 
 export default function MemberPrayersPage() {
@@ -66,10 +66,6 @@ export default function MemberPrayersPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Input placeholder="e.g. Healing, Family, Guidance..." />
-                </div>
-                <div className="space-y-2">
                   <Label>Your Prayer Request</Label>
                   <Textarea placeholder="Share your prayer need with us..." rows={5} />
                 </div>
@@ -96,16 +92,13 @@ export default function MemberPrayersPage() {
           <h2 className="text-xl font-semibold text-foreground mb-4">My Prayer Requests</h2>
           <div className="space-y-4">
             {myRequests.map(req => {
-              const config = statusConfig[req.status]
+              const config = statusConfig[req.status] || statusConfig.pending
               const StatusIcon = config.icon
               return (
                 <Card key={req.id}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-[var(--church-primary)]/10 text-[var(--church-primary)] text-xs">
-                          {req.category}
-                        </Badge>
                         <Badge variant="secondary" className={`${config.className} text-xs`}>
                           <StatusIcon className="w-3 h-3 mr-1" />
                           {config.label}
@@ -141,9 +134,6 @@ export default function MemberPrayersPage() {
                       <p className="font-semibold text-foreground text-sm">{item.name}</p>
                       <p className="text-xs text-muted-foreground">{item.date}</p>
                     </div>
-                    <Badge variant="secondary" className="bg-[var(--church-primary)]/10 text-[var(--church-primary)] text-xs">
-                      {item.category}
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">

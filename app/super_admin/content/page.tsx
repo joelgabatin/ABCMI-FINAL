@@ -82,6 +82,10 @@ export default function AdminContentPage() {
     fetch("/api/church-content")
       .then(r => r.json())
       .then(d => {
+        if (d.error) {
+          setVmdError(`Failed to load content: ${d.error}`)
+          return
+        }
         setMission(d.mission ?? "")
         setVision(d.vision ?? "")
         setDrivingForce(d.drivingForce ?? "")
@@ -89,7 +93,7 @@ export default function AdminContentPage() {
         setBeliefs(d.beliefs ?? [])
         setHistory(d.history ?? [])
       })
-      .catch(() => {})
+      .catch(err => setVmdError(`Network error loading content: ${err.message}`))
   }, [])
 
   // ── VMD save ──

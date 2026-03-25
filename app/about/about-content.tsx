@@ -42,7 +42,7 @@ export default function AboutContent({ initial }: { initial: ChurchContent }) {
 
     const channel = supabase
       .channel("about-page-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "church_VMD" },        () => refetch())
+      .on("postgres_changes", { event: "*", schema: "public", table: "church_vmd" },        () => refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "church_core_values" }, () => refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "church_beliefs" },     () => refetch())
       .on("postgres_changes", { event: "*", schema: "public", table: "church_history" },     () => refetch())
@@ -56,8 +56,12 @@ export default function AboutContent({ initial }: { initial: ChurchContent }) {
   return (
     <SiteLayout>
       {/* Hero */}
-      <section className="pt-24 pb-16 lg:pt-32 lg:pb-20 bg-gradient-to-br from-[var(--church-primary)] to-[var(--church-primary-deep)]">
-        <div className="container mx-auto px-4">
+      <section
+        className="pt-24 pb-16 lg:pt-32 lg:pb-20 relative"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1759127481171-30a27de310ad?w=1920&q=80')", backgroundSize: "cover", backgroundPosition: "center" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center text-white">
             <h1 className="text-4xl lg:text-5xl font-bold mb-4 text-balance">About Our Church</h1>
             <p className="text-xl text-white/90 text-pretty">

@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, role, avatar_url')
+      .select('name, role, avatar_url, is_active')
       .eq('id', supabaseUser.id)
       .single()
 
@@ -74,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }: { data: { session: Session | null } }) => {
       if (session?.user) {
         await loadProfile(session.user)
+        supabase.rpc('update_last_seen').then(() => {})
       }
       setIsLoading(false)
     })
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (_event: string, session: Session | null) => {
         if (session?.user) {
           loadProfile(session.user)
+          supabase.rpc('update_last_seen').then(() => {})
         } else {
           setUser(null)
         }
@@ -91,21 +93,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Ping last_seen every 2 minutes while logged in
+  useEffect(() => {
+    if (!user) return
+    const interval = setInterval(() => {
+      supabase.rpc('update_last_seen').then(() => {})
+    }, 2 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [user])
+
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string; role?: UserRole }> => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return { success: false, error: error.message }
 
-    // Use SECURITY DEFINER RPC to bypass RLS and reliably fetch role
-    const { data: roleData } = await supabase.rpc('get_my_role')
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, role, avatar_url')
+      .select('name, role, avatar_url, is_active')
       .eq('id', data.user.id)
       .single()
 
+    // Block deactivated accounts
+    if (profile?.is_active === false) {
+      await supabase.auth.signOut()
+      return { success: false, error: 'Your account has been deactivated. Please contact your administrator.' }
+    }
+
+    // Use SECURITY DEFINER RPC to bypass RLS and reliably fetch role
+    const { data: roleData } = await supabase.rpc('get_my_role')
     const resolvedRole = (roleData as UserRole) ?? profile?.role ?? 'member'
     const appUser = toAppUser(data.user, { ...profile, role: resolvedRole })
     setUser(appUser)
+    await supabase.rpc('update_last_seen')
     return { success: true, role: resolvedRole }
   }
 
