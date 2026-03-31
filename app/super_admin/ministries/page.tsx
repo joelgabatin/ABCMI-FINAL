@@ -43,7 +43,8 @@ interface Ministry {
   overseer: string
   co_leader: string
   location: string
-  contact: string
+  email: string
+  contact_number: string
   background_image_url: string
   activities: string[]
   slug: string
@@ -110,7 +111,7 @@ const eventTypeColors: Record<string, string> = {
 const emptyMinistryForm = {
   name: '', description: '', long_description: '', meeting_time: '',
   color: 'bg-[var(--church-primary)]', icon: 'Users', visible: true,
-  overseer: '', co_leader: '', location: '', contact: '',
+  overseer: '', co_leader: '', location: '', email: '', contact_number: '',
   background_image_url: '', slug: '',
 }
 const emptyEvent  = { title: '', date: '', time: '', location: '', event_description: '', type: 'Service' }
@@ -210,7 +211,7 @@ export default function AdminMinistriesPage() {
       name: m.name, description: m.description, long_description: m.long_description || '',
       meeting_time: m.meeting_time, color: m.color, icon: m.icon, visible: m.visible,
       overseer: m.overseer, co_leader: m.co_leader || '', location: m.location || '',
-      contact: m.contact || '', background_image_url: m.background_image_url || '',
+      email: m.email || '', contact_number: m.contact_number || '', background_image_url: m.background_image_url || '',
       slug: m.slug || '',
     })
     setActivities(m.activities || [])
@@ -652,11 +653,20 @@ export default function AdminMinistriesPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> Contact</Label>
+                      <Label className="flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> Email</Label>
                       <Input
-                        value={ministryForm.contact}
-                        onChange={e => setMinistryForm(f => ({ ...f, contact: e.target.value }))}
+                        value={ministryForm.email}
+                        onChange={e => setMinistryForm(f => ({ ...f, email: e.target.value }))}
                         placeholder="e.g. musicministry@abcmi.org"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><Phone className="w-3.5 h-3.5" /> Contact Number</Label>
+                      <Input
+                        type="tel"
+                        value={ministryForm.contact_number}
+                        onChange={e => setMinistryForm(f => ({ ...f, contact_number: e.target.value }))}
+                        placeholder="e.g. +63 9XX XXX XXXX"
                       />
                     </div>
                   </CardContent>
@@ -1221,3 +1231,4 @@ export default function AdminMinistriesPage() {
     </DashboardLayout>
   )
 }
+

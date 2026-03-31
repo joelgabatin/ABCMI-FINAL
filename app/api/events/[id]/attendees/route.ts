@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   // 1. First, check if the event exists and has open_registration = true
   const { data: event, error: eventError } = await supabase
-    .from('events')
+    .from('church_events')
     .select('open_registration, title')
     .eq('id', id)
     .single()

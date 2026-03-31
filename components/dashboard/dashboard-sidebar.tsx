@@ -29,6 +29,7 @@ import {
   Mail,
   GraduationCap,
   ChevronDown,
+  Link2,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import {
@@ -78,6 +79,7 @@ const adminNavItems = [
   { title: 'Ministries', icon: Church, href: '/super_admin/ministries' },
   { title: 'Branches', icon: MapPin, href: '/super_admin/branches' },
   { title: 'Content', icon: FileText, href: '/super_admin/content' },
+  { title: 'Website Pages', icon: Link2, href: '/super_admin/pages' },
   { title: 'Reports', icon: BarChart3, href: '/super_admin/reports' },
   { title: 'Permissions', icon: Shield, href: '/super_admin/permissions' },
   { title: 'Settings', icon: Settings, href: '/super_admin/settings' },

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import {
   Calendar, Plus, Users, Clock, MapPin, Edit, Trash2,
-  Search, Filter, Eye, Save, Loader2, ChevronLeft, ChevronRight,
+  Search, Filter, Eye, EyeOff, Globe, Save, Loader2, ChevronLeft, ChevronRight,
   Star, X, Mail, Phone, UserCheck, AlertCircle,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -279,6 +279,22 @@ export default function AdminEventsPage() {
     }
   }
 
+  // ── quick toggle: show/hide completed event on public website ──
+  const toggleFeaturedPast = async (ev: ChurchEvent) => {
+    const next = !ev.is_featured_past
+    try {
+      await apiFetch(`/api/events/${ev.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_featured_past: next }),
+      })
+      setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, is_featured_past: next } : e))
+      toast.success(next ? "Activity shown on website." : "Activity hidden from website.")
+    } catch (e: unknown) {
+      toast.error("Failed: " + (e instanceof Error ? e.message : String(e)))
+    }
+  }
+
   // ── derived ──
   const filtered = useMemo(() => events.filter(ev => {
     const isCompleted = ev.status === "completed"
@@ -461,6 +477,25 @@ export default function AdminEventsPage() {
                           style={{ width: `${Math.min(100, (acCount / ev.capacity) * 100)}%` }}
                         />
                       </div>
+                    )}
+                    {ev.status === "completed" && (
+                      <button
+                        onClick={() => toggleFeaturedPast(ev)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${
+                          ev.is_featured_past
+                            ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                            : "bg-muted border-border text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Globe className="w-3 h-3" />
+                          Show on Website
+                        </span>
+                        {ev.is_featured_past
+                          ? <Eye className="w-3 h-3" />
+                          : <EyeOff className="w-3 h-3" />
+                        }
+                      </button>
                     )}
                     <div className="flex gap-2 mt-auto">
                       <Button

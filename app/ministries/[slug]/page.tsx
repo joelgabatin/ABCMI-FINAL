@@ -233,7 +233,7 @@ export default async function MinistryDetailPage({ params }: { params: Promise<{
               )}
 
               {/* Location & Contact */}
-              {(ministry.location || ministry.contact) && (
+              {(ministry.location || ministry.email || ministry.contact_number) && (
                 <Card className="bg-background border-none shadow-lg">
                   <CardContent className="p-6">
                     <h3 className="font-bold text-foreground mb-4">Details</h3>
@@ -244,10 +244,18 @@ export default async function MinistryDetailPage({ params }: { params: Promise<{
                           <span className="text-muted-foreground">{ministry.location}</span>
                         </div>
                       )}
-                      {ministry.contact && (
+                      {ministry.contact_number && (
                         <div className="flex items-start gap-3">
                           <Phone className="w-4 h-4 text-[var(--church-primary)] mt-0.5 flex-shrink-0" />
-                          <span className="text-muted-foreground">{ministry.contact}</span>
+                          <a href={`tel:${ministry.contact_number}`} className="text-muted-foreground hover:text-[var(--church-primary)] transition-colors">
+                            {ministry.contact_number}
+                          </a>
+                        </div>
+                      )}
+                      {ministry.email && (
+                        <div className="flex items-start gap-3">
+                          <Phone className="w-4 h-4 text-[var(--church-primary)] mt-0.5 flex-shrink-0" />
+                          <span className="text-muted-foreground">{ministry.email}</span>
                         </div>
                       )}
                     </div>

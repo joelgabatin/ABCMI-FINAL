@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -8,22 +8,20 @@ const supabase = createClient(
 
 export async function GET() {
   const { data, error } = await supabase
-    .from('church_events')
+    .from('system_logs')
     .select('*')
-    .order('date', { ascending: true })
+    .order('logged_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
 
-export async function POST(req: NextRequest) {
-  const body = await req.json()
-  const { error, data } = await supabase
-    .from('church_events')
-    .insert([body])
-    .select('id')
-    .single()
+export async function DELETE() {
+  const { error } = await supabase
+    .from('system_logs')
+    .delete()
+    .neq('id', 0)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ id: data.id })
+  return NextResponse.json({ ok: true })
 }

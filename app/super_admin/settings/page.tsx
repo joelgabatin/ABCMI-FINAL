@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Settings,
   Database,
@@ -17,10 +17,9 @@ import {
   Clock,
   User,
   Lock,
-  Mail,
-  Smartphone,
   Eye,
   EyeOff,
+  Loader2,
 } from "lucide-react"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -32,62 +31,215 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
+import { format, parseISO } from "date-fns"
 
-// --- Sample data ---
-const backupHistory = [
-  { id: 1, date: "2025-03-20 02:00 AM", size: "14.2 MB", type: "Automatic", status: "success" },
-  { id: 2, date: "2025-03-19 02:00 AM", size: "13.9 MB", type: "Automatic", status: "success" },
-  { id: 3, date: "2025-03-18 02:00 AM", size: "13.7 MB", type: "Automatic", status: "success" },
-  { id: 4, date: "2025-03-17 11:30 AM", size: "13.5 MB", type: "Manual", status: "success" },
-  { id: 5, date: "2025-03-16 02:00 AM", size: "13.2 MB", type: "Automatic", status: "failed" },
-  { id: 6, date: "2025-03-15 02:00 AM", size: "12.8 MB", type: "Automatic", status: "success" },
-]
+// ── Types ──────────────────────────────────────────────────────────────────
 
-const systemLogs = [
-  { id: 1, time: "2025-03-21 09:45:12", level: "info", user: "Admin", action: "Logged in", ip: "192.168.1.10" },
-  { id: 2, time: "2025-03-21 09:50:33", level: "info", user: "Admin", action: "Updated prayer request #42", ip: "192.168.1.10" },
-  { id: 3, time: "2025-03-21 10:02:18", level: "warning", user: "System", action: "Backup attempt delayed by 5 minutes", ip: "—" },
-  { id: 4, time: "2025-03-21 10:15:44", level: "info", user: "Admin", action: "Added new event: Easter Sunday Celebration", ip: "192.168.1.10" },
-  { id: 5, time: "2025-03-21 10:30:07", level: "info", user: "Member #18", action: "Submitted prayer request", ip: "192.168.1.55" },
-  { id: 6, time: "2025-03-21 10:45:22", level: "error", user: "System", action: "Email notification failed for user #23", ip: "—" },
-  { id: 7, time: "2025-03-21 11:00:00", level: "info", user: "System", action: "Automatic backup completed successfully", ip: "—" },
-  { id: 8, time: "2025-03-21 11:12:38", level: "info", user: "Admin", action: "Deleted event: Cancelled Workshop", ip: "192.168.1.10" },
-  { id: 9, time: "2025-03-21 11:30:55", level: "warning", user: "Member #7", action: "Failed login attempt (wrong password)", ip: "203.45.12.88" },
-  { id: 10, time: "2025-03-21 11:45:01", level: "info", user: "Admin", action: "Exported member list", ip: "192.168.1.10" },
-]
+interface SiteSettings {
+  church_name: string
+  acronym: string
+  contact_email: string
+  contact_phone: string
+  address: string
+  tagline: string
+  enable_chatbot: boolean
+  enable_donations: boolean
+  maintenance_mode: boolean
+  allow_registration: boolean
+  backup_frequency: string
+  backup_time: string
+  retention_days: number
+  backup_storage: string
+  backup_email_notify: boolean
+  twofa_enabled: boolean
+  login_attempt_limit: boolean
+  session_timeout_minutes: number
+  ip_allowlist_enabled: boolean
+  notify_new_member: boolean
+  notify_prayer_request: boolean
+  notify_counseling: boolean
+  notify_donation: boolean
+  notify_backup: boolean
+  notify_failed_login: boolean
+  primary_admin_email: string
+  secondary_admin_email: string | null
+  office_hours: string
+  google_maps_embed_url: string
+  facebook_url: string
+  youtube_url: string
+  instagram_url: string
+  tiktok_url: string
+}
+
+interface BackupRecord {
+  id: number
+  backed_at: string
+  size_mb: number | null
+  type: string
+  status: string
+}
+
+interface LogRecord {
+  id: number
+  logged_at: string
+  level: string
+  actor: string
+  action: string
+  ip_address: string
+}
+
+const DEFAULT_SETTINGS: SiteSettings = {
+  church_name: "Arise and Build For Christ Ministries Inc.",
+  acronym: "ABCMI",
+  contact_email: "info@abcmi.org",
+  contact_phone: "+63 74 123 4567",
+  address: "East Quirino Hill, Baguio City, Philippines",
+  tagline: "Building for Christ — from Baguio to the Nations",
+  enable_chatbot: true,
+  enable_donations: true,
+  maintenance_mode: false,
+  allow_registration: true,
+  backup_frequency: "daily",
+  backup_time: "02:00",
+  retention_days: 30,
+  backup_storage: "local",
+  backup_email_notify: true,
+  twofa_enabled: false,
+  login_attempt_limit: true,
+  session_timeout_minutes: 60,
+  ip_allowlist_enabled: false,
+  notify_new_member: true,
+  notify_prayer_request: true,
+  notify_counseling: true,
+  notify_donation: true,
+  notify_backup: true,
+  notify_failed_login: false,
+  primary_admin_email: "admin@abcmi.org",
+  secondary_admin_email: null,
+  office_hours: "Mon–Fri: 8AM – 5PM\nSat: 8AM – 12PM",
+  google_maps_embed_url: "",
+  facebook_url: "",
+  youtube_url: "",
+  instagram_url: "",
+  tiktok_url: "",
+}
 
 const logLevelStyles: Record<string, string> = {
   info: "bg-blue-50 text-blue-700 border-blue-200",
   warning: "bg-yellow-50 text-yellow-700 border-yellow-200",
   error: "bg-red-50 text-red-700 border-red-200",
 }
-
 const logLevelIcons: Record<string, React.ElementType> = {
   info: Info,
   warning: AlertTriangle,
   error: AlertTriangle,
 }
 
+function fmt(dateStr: string) {
+  try { return format(parseISO(dateStr), "MMM d, yyyy hh:mm a") } catch { return dateStr }
+}
+
+// Session timeout: store 0 in DB for "never"
+function timeoutToSelect(minutes: number): string {
+  return minutes === 0 ? "never" : String(minutes)
+}
+function selectToTimeout(val: string): number {
+  return val === "never" ? 0 : parseInt(val)
+}
+
 export default function AdminSettingsPage() {
+  const [settings, setSettings]       = useState<SiteSettings>(DEFAULT_SETTINGS)
+  const [backups, setBackups]         = useState<BackupRecord[]>([])
+  const [logs, setLogs]               = useState<LogRecord[]>([])
+  const [loading, setLoading]         = useState(true)
+  const [saving, setSaving]           = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [backupRunning, setBackupRunning] = useState(false)
-  const [logFilter, setLogFilter] = useState("all")
-  const [saved, setSaved] = useState(false)
+  const [logFilter, setLogFilter]     = useState("all")
 
-  const handleManualBackup = () => {
+  // ── Load all data on mount ────────────────────────────────────────────────
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/settings").then(r => r.json()),
+      fetch("/api/settings/backups").then(r => r.json()),
+      fetch("/api/settings/logs").then(r => r.json()),
+    ]).then(([s, b, l]) => {
+      if (s && !s.error) setSettings(s)
+      if (Array.isArray(b)) setBackups(b)
+      if (Array.isArray(l)) setLogs(l)
+    }).catch(() => {
+      toast.error("Failed to load settings.")
+    }).finally(() => setLoading(false))
+  }, [])
+
+  const set = <K extends keyof SiteSettings>(key: K, value: SiteSettings[K]) =>
+    setSettings(prev => ({ ...prev, [key]: value }))
+
+  // ── Save settings ─────────────────────────────────────────────────────────
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Settings saved successfully.")
+    } catch {
+      toast.error("Failed to save settings.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // ── Manual backup ─────────────────────────────────────────────────────────
+  const handleManualBackup = async () => {
     setBackupRunning(true)
-    setTimeout(() => setBackupRunning(false), 2500)
+    try {
+      const res = await fetch("/api/settings/backups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "Manual", status: "success" }),
+      })
+      if (!res.ok) throw new Error()
+      const newRecord = await res.json()
+      setBackups(prev => [newRecord, ...prev])
+      toast.success("Manual backup completed.")
+    } catch {
+      toast.error("Backup failed.")
+    } finally {
+      setBackupRunning(false)
+    }
   }
 
-  const handleSave = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  // ── Clear logs ────────────────────────────────────────────────────────────
+  const handleClearLogs = async () => {
+    try {
+      const res = await fetch("/api/settings/logs", { method: "DELETE" })
+      if (!res.ok) throw new Error()
+      setLogs([])
+      toast.success("Logs cleared.")
+    } catch {
+      toast.error("Failed to clear logs.")
+    }
   }
 
-  const filteredLogs = logFilter === "all"
-    ? systemLogs
-    : systemLogs.filter((l) => l.level === logFilter)
+  const filteredLogs = logFilter === "all" ? logs : logs.filter(l => l.level === logFilter)
+
+  const lastBackup = backups[0]
+  const nextScheduled = settings.backup_time
+
+  if (loading) {
+    return (
+      <DashboardLayout variant="admin">
+        <main className="min-h-screen bg-[var(--church-light-blue)] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--church-primary)]" />
+        </main>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout variant="admin">
@@ -105,28 +257,23 @@ export default function AdminSettingsPage() {
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="flex flex-wrap h-auto gap-1 bg-background border border-border p-1 rounded-lg">
             <TabsTrigger value="general" className="flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              General
+              <Globe className="w-4 h-4" /> General
             </TabsTrigger>
             <TabsTrigger value="backup" className="flex items-center gap-2">
-              <Database className="w-4 h-4" />
-              Backup
+              <Database className="w-4 h-4" /> Backup
             </TabsTrigger>
             <TabsTrigger value="logs" className="flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Logs
+              <FileText className="w-4 h-4" /> Logs
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              Security
+              <Shield className="w-4 h-4" /> Security
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <Bell className="w-4 h-4" />
-              Notifications
+              <Bell className="w-4 h-4" /> Notifications
             </TabsTrigger>
           </TabsList>
 
-          {/* ── GENERAL ── */}
+          {/* ── GENERAL ─────────────────────────────────────────────────────── */}
           <TabsContent value="general" className="space-y-6">
             <Card>
               <CardHeader>
@@ -136,31 +283,97 @@ export default function AdminSettingsPage() {
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="church-name">Church Name</Label>
-                    <Input id="church-name" defaultValue="Arise and Build For Christ Ministries Inc." />
+                    <Label>Church Name</Label>
+                    <Input value={settings.church_name} onChange={e => set("church_name", e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="church-acronym">Acronym</Label>
-                    <Input id="church-acronym" defaultValue="ABCMI" />
+                    <Label>Acronym</Label>
+                    <Input value={settings.acronym} onChange={e => set("acronym", e.target.value)} />
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="church-email">Contact Email</Label>
-                    <Input id="church-email" type="email" defaultValue="info@abcmi.org" />
+                    <Label>Contact Email</Label>
+                    <Input type="email" value={settings.contact_email} onChange={e => set("contact_email", e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="church-phone">Contact Phone</Label>
-                    <Input id="church-phone" defaultValue="+63 74 123 4567" />
+                    <Label>Contact Phone</Label>
+                    <Input value={settings.contact_phone} onChange={e => set("contact_phone", e.target.value)} />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="church-address">Main Church Address</Label>
-                  <Input id="church-address" defaultValue="East Quirino Hill, Baguio City, Philippines" />
+                  <Label>Main Church Address</Label>
+                  <Input value={settings.address} onChange={e => set("address", e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="church-tagline">Website Tagline</Label>
-                  <Input id="church-tagline" defaultValue="Building for Christ — from Baguio to the Nations" />
+                  <Label>Website Tagline</Label>
+                  <Input value={settings.tagline} onChange={e => set("tagline", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Office Hours</Label>
+                  <textarea
+                    rows={3}
+                    value={settings.office_hours}
+                    onChange={e => set("office_hours", e.target.value)}
+                    placeholder={"Mon–Fri: 8AM – 5PM\nSat: 8AM – 12PM"}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">Each line will appear as a separate entry on the website.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Google Maps Embed URL</Label>
+                  <Input
+                    value={settings.google_maps_embed_url}
+                    onChange={e => set("google_maps_embed_url", e.target.value)}
+                    placeholder="https://www.google.com/maps/embed?pb=..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Paste the embed URL from Google Maps → Share → Embed a map → copy the <code>src</code> value.
+                    This controls the map shown on the Contact page.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Social Media</CardTitle>
+                <CardDescription>Links shown in the footer and Contact page. Leave blank to hide.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Facebook URL</Label>
+                    <Input
+                      value={settings.facebook_url}
+                      onChange={e => set("facebook_url", e.target.value)}
+                      placeholder="https://www.facebook.com/abcmi"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>YouTube URL</Label>
+                    <Input
+                      value={settings.youtube_url}
+                      onChange={e => set("youtube_url", e.target.value)}
+                      placeholder="https://www.youtube.com/@abcmi"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Instagram URL</Label>
+                    <Input
+                      value={settings.instagram_url}
+                      onChange={e => set("instagram_url", e.target.value)}
+                      placeholder="https://www.instagram.com/abcmi"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>TikTok URL</Label>
+                    <Input
+                      value={settings.tiktok_url}
+                      onChange={e => set("tiktok_url", e.target.value)}
+                      placeholder="https://www.tiktok.com/@abcmi"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -171,76 +384,66 @@ export default function AdminSettingsPage() {
                 <CardDescription>Control the behaviour and visibility of site features.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">Enable Chatbot</p>
-                    <p className="text-sm text-muted-foreground">Show the AI church assistant widget on public pages.</p>
+                {([
+                  { key: "enable_chatbot",    label: "Enable Chatbot",      desc: "Show the AI church assistant widget on public pages." },
+                  { key: "enable_donations",  label: "Online Donations",    desc: "Allow members to submit donation information online." },
+                  { key: "maintenance_mode",  label: "Maintenance Mode",    desc: "Show a maintenance notice to public visitors." },
+                  { key: "allow_registration",label: "Member Registration", desc: "Allow new members to register on the website." },
+                ] as { key: keyof SiteSettings; label: string; desc: string }[]).map((item, i) => (
+                  <div key={item.key}>
+                    {i > 0 && <Separator className="mb-5" />}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">{item.label}</p>
+                        <p className="text-sm text-muted-foreground">{item.desc}</p>
+                      </div>
+                      <Switch
+                        checked={settings[item.key] as boolean}
+                        onCheckedChange={v => set(item.key, v)}
+                      />
+                    </div>
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">Online Donations</p>
-                    <p className="text-sm text-muted-foreground">Allow members to submit donation information online.</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">Maintenance Mode</p>
-                    <p className="text-sm text-muted-foreground">Show a maintenance notice to public visitors.</p>
-                  </div>
-                  <Switch />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-foreground">Member Registration</p>
-                    <p className="text-sm text-muted-foreground">Allow new members to register on the website.</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
+                ))}
               </CardContent>
             </Card>
 
             <div className="flex justify-end">
               <Button
                 onClick={handleSave}
+                disabled={saving}
                 className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
               >
-                {saved ? (
-                  <><CheckCircle className="w-4 h-4 mr-2" /> Saved</>
-                ) : (
-                  "Save Changes"
-                )}
+                {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving…</> : "Save Changes"}
               </Button>
             </div>
           </TabsContent>
 
-          {/* ── BACKUP ── */}
+          {/* ── BACKUP ──────────────────────────────────────────────────────── */}
           <TabsContent value="backup" className="space-y-6">
             <div className="grid sm:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="p-6">
                   <p className="text-sm text-muted-foreground">Last Backup</p>
-                  <p className="text-xl font-bold text-foreground mt-1">Mar 20, 2025</p>
-                  <p className="text-xs text-muted-foreground">02:00 AM — 14.2 MB</p>
+                  <p className="text-xl font-bold text-foreground mt-1">
+                    {lastBackup ? format(parseISO(lastBackup.backed_at), "MMM d, yyyy") : "—"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {lastBackup ? `${format(parseISO(lastBackup.backed_at), "hh:mm a")} · ${lastBackup.size_mb ? lastBackup.size_mb + " MB" : "—"}` : "No backups yet"}
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6">
                   <p className="text-sm text-muted-foreground">Total Backups</p>
-                  <p className="text-xl font-bold text-foreground mt-1">6 stored</p>
-                  <p className="text-xs text-muted-foreground">Retention: 30 days</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{backups.length} stored</p>
+                  <p className="text-xs text-muted-foreground">Retention: {settings.retention_days} days</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-6">
                   <p className="text-sm text-muted-foreground">Next Scheduled</p>
-                  <p className="text-xl font-bold text-foreground mt-1">Mar 21, 2025</p>
-                  <p className="text-xs text-muted-foreground">02:00 AM — Daily</p>
+                  <p className="text-xl font-bold text-foreground mt-1 capitalize">{settings.backup_frequency}</p>
+                  <p className="text-xs text-muted-foreground">at {nextScheduled}</p>
                 </CardContent>
               </Card>
             </div>
@@ -254,10 +457,8 @@ export default function AdminSettingsPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Backup Frequency</Label>
-                    <Select defaultValue="daily">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                    <Select value={settings.backup_frequency} onValueChange={v => set("backup_frequency", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="hourly">Every Hour</SelectItem>
                         <SelectItem value="daily">Daily</SelectItem>
@@ -268,16 +469,14 @@ export default function AdminSettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Backup Time</Label>
-                    <Input type="time" defaultValue="02:00" />
+                    <Input type="time" value={settings.backup_time} onChange={e => set("backup_time", e.target.value)} />
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Retention Period</Label>
-                    <Select defaultValue="30">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                    <Select value={String(settings.retention_days)} onValueChange={v => set("retention_days", parseInt(v))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="7">7 days</SelectItem>
                         <SelectItem value="14">14 days</SelectItem>
@@ -288,10 +487,8 @@ export default function AdminSettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Backup Storage</Label>
-                    <Select defaultValue="local">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                    <Select value={settings.backup_storage} onValueChange={v => set("backup_storage", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="local">Local Server</SelectItem>
                         <SelectItem value="cloud">Cloud Storage</SelectItem>
@@ -305,7 +502,7 @@ export default function AdminSettingsPage() {
                     <p className="font-medium text-foreground">Email Notification on Backup</p>
                     <p className="text-sm text-muted-foreground">Send a report email after each backup.</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch checked={settings.backup_email_notify} onCheckedChange={v => set("backup_email_notify", v)} />
                 </div>
               </CardContent>
             </Card>
@@ -322,52 +519,57 @@ export default function AdminSettingsPage() {
                     disabled={backupRunning}
                     className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
                   >
-                    {backupRunning ? (
-                      <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Backing up…</>
-                    ) : (
-                      <><Database className="w-4 h-4 mr-2" /> Run Backup Now</>
-                    )}
+                    {backupRunning
+                      ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Backing up…</>
+                      : <><Database className="w-4 h-4 mr-2" /> Run Backup Now</>}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {backupHistory.map((b) => (
-                    <div key={b.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
-                      <div className="flex items-center gap-3">
-                        {b.status === "success" ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                        ) : (
-                          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                        )}
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{b.date}</p>
-                          <p className="text-xs text-muted-foreground">{b.type} · {b.size}</p>
+                {backups.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">No backup history yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {backups.map(b => (
+                      <div key={b.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
+                        <div className="flex items-center gap-3">
+                          {b.status === "success"
+                            ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                            : <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />}
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{fmt(b.backed_at)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {b.type} · {b.size_mb ? b.size_mb + " MB" : "—"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className={b.status === "success" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
+                            {b.status}
+                          </Badge>
+                          {b.status === "success" && (
+                            <Button variant="ghost" size="sm"><Download className="w-4 h-4" /></Button>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className={b.status === "success"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-red-100 text-red-700"}
-                        >
-                          {b.status}
-                        </Badge>
-                        {b.status === "success" && (
-                          <Button variant="ghost" size="sm">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
+              >
+                {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving…</> : "Save Backup Settings"}
+              </Button>
+            </div>
           </TabsContent>
 
-          {/* ── LOGS ── */}
+          {/* ── LOGS ────────────────────────────────────────────────────────── */}
           <TabsContent value="logs" className="space-y-6">
             <Card>
               <CardHeader>
@@ -378,9 +580,7 @@ export default function AdminSettingsPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Select value={logFilter} onValueChange={setLogFilter}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Levels</SelectItem>
                         <SelectItem value="info">Info</SelectItem>
@@ -389,52 +589,54 @@ export default function AdminSettingsPage() {
                       </SelectContent>
                     </Select>
                     <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export
+                      <Download className="w-4 h-4 mr-2" /> Export
                     </Button>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Clear
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={handleClearLogs}>
+                      <Trash2 className="w-4 h-4 mr-2" /> Clear
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {filteredLogs.map((log) => {
-                    const Icon = logLevelIcons[log.level]
-                    return (
-                      <div
-                        key={log.id}
-                        className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 rounded-lg border text-sm ${logLevelStyles[log.level]}`}
-                      >
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <Icon className="w-4 h-4" />
-                          <Badge variant="outline" className="uppercase text-xs font-semibold border-current">
-                            {log.level}
-                          </Badge>
+                {filteredLogs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">No logs to display.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredLogs.map(log => {
+                      const Icon = logLevelIcons[log.level] ?? Info
+                      return (
+                        <div
+                          key={log.id}
+                          className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 rounded-lg border text-sm ${logLevelStyles[log.level] ?? ""}`}
+                        >
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Icon className="w-4 h-4" />
+                            <Badge variant="outline" className="uppercase text-xs font-semibold border-current">
+                              {log.level}
+                            </Badge>
+                          </div>
+                          <div className="flex-1">
+                            <span className="font-medium">{log.actor}</span>
+                            <span className="mx-2 opacity-50">—</span>
+                            <span>{log.action}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs opacity-70 flex-shrink-0">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {fmt(log.logged_at)}
+                            </span>
+                            <span>IP: {log.ip_address}</span>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <span className="font-medium">{log.user}</span>
-                          <span className="mx-2 opacity-50">—</span>
-                          <span>{log.action}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs opacity-70 flex-shrink-0">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {log.time}
-                          </span>
-                          <span>IP: {log.ip}</span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                      )
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* ── SECURITY ── */}
+          {/* ── SECURITY ────────────────────────────────────────────────────── */}
           <TabsContent value="security" className="space-y-6">
             <Card>
               <CardHeader>
@@ -443,13 +645,9 @@ export default function AdminSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="current-password">Current Password</Label>
+                  <Label>Current Password</Label>
                   <div className="relative">
-                    <Input
-                      id="current-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter current password"
-                    />
+                    <Input type={showPassword ? "text" : "password"} placeholder="Enter current password" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -460,16 +658,15 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input id="new-password" type="password" placeholder="Enter new password" />
+                  <Label>New Password</Label>
+                  <Input type="password" placeholder="Enter new password" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input id="confirm-password" type="password" placeholder="Confirm new password" />
+                  <Label>Confirm New Password</Label>
+                  <Input type="password" placeholder="Confirm new password" />
                 </div>
                 <Button className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white">
-                  <Lock className="w-4 h-4 mr-2" />
-                  Update Password
+                  <Lock className="w-4 h-4 mr-2" /> Update Password
                 </Button>
               </CardContent>
             </Card>
@@ -485,7 +682,7 @@ export default function AdminSettingsPage() {
                     <p className="font-medium text-foreground">Two-Factor Authentication (2FA)</p>
                     <p className="text-sm text-muted-foreground">Require a code from the authenticator app on login.</p>
                   </div>
-                  <Switch />
+                  <Switch checked={settings.twofa_enabled} onCheckedChange={v => set("twofa_enabled", v)} />
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
@@ -493,7 +690,7 @@ export default function AdminSettingsPage() {
                     <p className="font-medium text-foreground">Login Attempt Limit</p>
                     <p className="text-sm text-muted-foreground">Lock account after 5 failed login attempts.</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch checked={settings.login_attempt_limit} onCheckedChange={v => set("login_attempt_limit", v)} />
                 </div>
                 <Separator />
                 <div className="flex items-center justify-between">
@@ -501,10 +698,11 @@ export default function AdminSettingsPage() {
                     <p className="font-medium text-foreground">Session Timeout</p>
                     <p className="text-sm text-muted-foreground">Automatically log out after inactivity.</p>
                   </div>
-                  <Select defaultValue="60">
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select
+                    value={timeoutToSelect(settings.session_timeout_minutes)}
+                    onValueChange={v => set("session_timeout_minutes", selectToTimeout(v))}
+                  >
+                    <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="15">15 minutes</SelectItem>
                       <SelectItem value="30">30 minutes</SelectItem>
@@ -519,7 +717,7 @@ export default function AdminSettingsPage() {
                     <p className="font-medium text-foreground">IP Allowlist</p>
                     <p className="text-sm text-muted-foreground">Restrict admin access to specific IP addresses.</p>
                   </div>
-                  <Switch />
+                  <Switch checked={settings.ip_allowlist_enabled} onCheckedChange={v => set("ip_allowlist_enabled", v)} />
                 </div>
               </CardContent>
             </Card>
@@ -532,7 +730,7 @@ export default function AdminSettingsPage() {
               <CardContent className="space-y-3">
                 {[
                   { device: "Chrome on Windows 11", ip: "192.168.1.10", time: "Active now", current: true },
-                  { device: "Safari on iPhone 15", ip: "192.168.1.22", time: "2 hours ago", current: false },
+                  { device: "Safari on iPhone 15",  ip: "192.168.1.22", time: "2 hours ago", current: false },
                 ].map((session, i) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
                     <div className="flex items-center gap-3">
@@ -543,22 +741,28 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {session.current && (
-                        <Badge className="bg-emerald-100 text-emerald-700">Current</Badge>
-                      )}
+                      {session.current && <Badge className="bg-emerald-100 text-emerald-700">Current</Badge>}
                       {!session.current && (
-                        <Button variant="outline" size="sm" className="text-destructive">
-                          Revoke
-                        </Button>
+                        <Button variant="outline" size="sm" className="text-destructive">Revoke</Button>
                       )}
                     </div>
                   </div>
                 ))}
               </CardContent>
             </Card>
+
+            <div className="flex justify-end">
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
+              >
+                {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving…</> : "Save Security Settings"}
+              </Button>
+            </div>
           </TabsContent>
 
-          {/* ── NOTIFICATIONS ── */}
+          {/* ── NOTIFICATIONS ───────────────────────────────────────────────── */}
           <TabsContent value="notifications" className="space-y-6">
             <Card>
               <CardHeader>
@@ -566,22 +770,25 @@ export default function AdminSettingsPage() {
                 <CardDescription>Choose which events trigger an email to the admin.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                {[
-                  { label: "New Member Registration", desc: "When a new member signs up.", defaultOn: true },
-                  { label: "New Prayer Request", desc: "When a member submits a prayer request.", defaultOn: true },
-                  { label: "New Counseling Request", desc: "When a counseling session is requested.", defaultOn: true },
-                  { label: "New Donation Received", desc: "When a donation is submitted.", defaultOn: true },
-                  { label: "Backup Success / Failure", desc: "After each scheduled backup attempt.", defaultOn: true },
-                  { label: "Failed Login Attempt", desc: "When someone fails to log in multiple times.", defaultOn: false },
-                ].map((item, i) => (
-                  <div key={i}>
+                {([
+                  { key: "notify_new_member",     label: "New Member Registration",  desc: "When a new member signs up." },
+                  { key: "notify_prayer_request", label: "New Prayer Request",        desc: "When a member submits a prayer request." },
+                  { key: "notify_counseling",     label: "New Counseling Request",    desc: "When a counseling session is requested." },
+                  { key: "notify_donation",       label: "New Donation Received",     desc: "When a donation is submitted." },
+                  { key: "notify_backup",         label: "Backup Success / Failure",  desc: "After each scheduled backup attempt." },
+                  { key: "notify_failed_login",   label: "Failed Login Attempt",      desc: "When someone fails to log in multiple times." },
+                ] as { key: keyof SiteSettings; label: string; desc: string }[]).map((item, i) => (
+                  <div key={item.key}>
                     {i > 0 && <Separator className="mb-5" />}
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-foreground">{item.label}</p>
                         <p className="text-sm text-muted-foreground">{item.desc}</p>
                       </div>
-                      <Switch defaultChecked={item.defaultOn} />
+                      <Switch
+                        checked={settings[item.key] as boolean}
+                        onCheckedChange={v => set(item.key, v)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -595,23 +802,29 @@ export default function AdminSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="admin-email">Primary Admin Email</Label>
-                  <Input id="admin-email" type="email" defaultValue="admin@abcmi.org" />
+                  <Label>Primary Admin Email</Label>
+                  <Input
+                    type="email"
+                    value={settings.primary_admin_email}
+                    onChange={e => set("primary_admin_email", e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="secondary-email">Secondary Email (optional)</Label>
-                  <Input id="secondary-email" type="email" placeholder="another@example.com" />
+                  <Label>Secondary Email (optional)</Label>
+                  <Input
+                    type="email"
+                    value={settings.secondary_admin_email ?? ""}
+                    onChange={e => set("secondary_admin_email", e.target.value || null)}
+                    placeholder="another@example.com"
+                  />
                 </div>
                 <div className="flex justify-end">
                   <Button
                     onClick={handleSave}
+                    disabled={saving}
                     className="bg-[var(--church-primary)] hover:bg-[var(--church-primary-deep)] text-white"
                   >
-                    {saved ? (
-                      <><CheckCircle className="w-4 h-4 mr-2" /> Saved</>
-                    ) : (
-                      "Save Notification Settings"
-                    )}
+                    {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving…</> : "Save Notification Settings"}
                   </Button>
                 </div>
               </CardContent>
