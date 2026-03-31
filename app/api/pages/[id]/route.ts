@@ -7,27 +7,27 @@ const supabase = createClient(
 )
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: rawId } = await params
-  const id = parseInt(rawId)
+  const { id } = await params
   const body = await req.json()
 
-  const { error } = await supabase
-    .from('church_events')
+  const { data, error } = await supabase
+    .from('website_pages')
     .update({ ...body, updated_at: new Date().toISOString() })
-    .eq('id', id)
+    .eq('id', parseInt(id))
+    .select()
+    .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ ok: true })
+  return NextResponse.json(data)
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id: rawId } = await params
-  const id = parseInt(rawId)
+  const { id } = await params
 
   const { error } = await supabase
-    .from('church_events')
+    .from('website_pages')
     .delete()
-    .eq('id', id)
+    .eq('id', parseInt(id))
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

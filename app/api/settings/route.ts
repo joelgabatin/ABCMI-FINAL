@@ -8,22 +8,25 @@ const supabase = createClient(
 
 export async function GET() {
   const { data, error } = await supabase
-    .from('church_events')
+    .from('site_settings')
     .select('*')
-    .order('date', { ascending: true })
+    .eq('id', 1)
+    .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
 
-export async function POST(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   const body = await req.json()
-  const { error, data } = await supabase
-    .from('church_events')
-    .insert([body])
-    .select('id')
+
+  const { data, error } = await supabase
+    .from('site_settings')
+    .update({ ...body, updated_at: new Date().toISOString() })
+    .eq('id', 1)
+    .select()
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ id: data.id })
+  return NextResponse.json(data)
 }

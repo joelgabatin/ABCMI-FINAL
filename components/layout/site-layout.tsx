@@ -7,16 +7,20 @@ import ChurchChatbot from "@/components/chatbot/church-chatbot"
 
 interface SiteLayoutProps {
   children: React.ReactNode
+  showChatbot?: boolean
 }
 
-export function SiteLayout({ children }: SiteLayoutProps) {
+export function SiteLayout({
+  children,
+  showChatbot = true,
+}: SiteLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
       <ScrollToTopButton />
-      <ChurchChatbot />
+      {showChatbot && <ChurchChatbot />}
     </div>
   )
 }

@@ -8,9 +8,9 @@ const supabase = createClient(
 
 export async function GET() {
   const { data, error } = await supabase
-    .from('church_events')
+    .from('backup_history')
     .select('*')
-    .order('date', { ascending: true })
+    .order('backed_at', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
@@ -18,12 +18,13 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { error, data } = await supabase
-    .from('church_events')
-    .insert([body])
-    .select('id')
+
+  const { data, error } = await supabase
+    .from('backup_history')
+    .insert([{ type: 'Manual', status: 'success', ...body }])
+    .select()
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json({ id: data.id })
+  return NextResponse.json(data)
 }

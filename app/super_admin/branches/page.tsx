@@ -81,7 +81,7 @@ interface Region {
 // ── Constants ──────────────────────────────────────────────────────────────
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const serviceTypes = ["Sunday Worship", "Bible Study", "Prayer Meeting", "Youth Fellowship", "Cell Group", "Fasting Prayer", "Missions Meeting", "Other"]
-const pastorRoles = ["Senior Pastor", "Associate Pastor", "Pastor", "Pastora", "District Pastor", "Mission Pastor"]
+const pastorRoles = ["Overseer", "Administrative Pastor", "Resident Pastor"]
 
 const emptyBranch: Omit<Branch, "id"> = { name: "", location: "", region_id: 0, status: "active", member_count: 0, established: "", maps_url: "" }
 const emptySchedule: Omit<ServiceSchedule, "id"> = { branch_id: 0, day: "Sunday", time: "", type: "Sunday Worship", description: "" }
