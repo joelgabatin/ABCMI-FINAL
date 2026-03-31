@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { getChatbotApiUrl } from '@/lib/chatbot/config'
 import { getOrCreateChatSenderId } from '@/lib/chatbot/sender'
 import type {
+  ChatHistoryResponse,
   ChatMessage,
   ChatbotRequestPayload,
   ChatbotResponseMessage,
@@ -161,6 +162,22 @@ async function postChatMessage(payload: ChatbotRequestPayload) {
   return Array.isArray(data) ? data : []
 }
 
+async function fetchChatHistory(visitorId: string) {
+  const searchParams = new URLSearchParams({ visitorId })
+  const response = await fetch(`/api/chat/history?${searchParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`History request failed with status ${response.status}`)
+  }
+
+  return (await response.json()) as ChatHistoryResponse
+}
+
 export default function ChurchChatbot({
   variant = 'floating',
   className,
@@ -174,11 +191,50 @@ export default function ChurchChatbot({
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setSenderId(getOrCreateChatSenderId())
   }, [])
+
+  useEffect(() => {
+    if (!senderId) {
+      return
+    }
+
+    let isActive = true
+
+    const loadHistory = async () => {
+      setIsHistoryLoading(true)
+      setError(null)
+
+      try {
+        const history = await fetchChatHistory(senderId)
+        if (!isActive) {
+          return
+        }
+
+        if (history.messages.length > 0) {
+          setMessages(history.messages)
+        }
+      } catch {
+        if (isActive) {
+          setError('Unable to restore previous chat history right now.')
+        }
+      } finally {
+        if (isActive) {
+          setIsHistoryLoading(false)
+        }
+      }
+    }
+
+    void loadHistory()
+
+    return () => {
+      isActive = false
+    }
+  }, [senderId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -189,11 +245,15 @@ export default function ChurchChatbot({
     return () => window.clearTimeout(timeoutId)
   }, [])
 
-  const canSend = Boolean(senderId) && !isLoading && input.trim().length > 0
+  const canSend =
+    Boolean(senderId) &&
+    !isLoading &&
+    !isHistoryLoading &&
+    input.trim().length > 0
 
   const sendMessage = async (rawMessage: string) => {
     const message = rawMessage.trim()
-    if (!message || isLoading || !senderId) {
+    if (!message || isLoading || isHistoryLoading || !senderId) {
       return
     }
 
@@ -406,7 +466,7 @@ export default function ChurchChatbot({
                   <button
                     key={question}
                     onClick={() => void sendMessage(question)}
-                    disabled={isLoading || !senderId}
+                    disabled={isLoading || isHistoryLoading || !senderId}
                     className="rounded-full border border-[var(--church-primary)]/20 bg-[var(--church-primary)]/10 px-3 py-1.5 text-xs font-medium text-[var(--church-primary)] transition-colors hover:bg-[var(--church-primary)]/20 disabled:opacity-50"
                   >
                     {question}
@@ -421,9 +481,15 @@ export default function ChurchChatbot({
               <Input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder={senderId ? 'Ask Grace anything...' : 'Preparing chat...'}
+                placeholder={
+                  isHistoryLoading
+                    ? 'Restoring conversation...'
+                    : senderId
+                      ? 'Ask Grace anything...'
+                      : 'Preparing chat...'
+                }
                 className="flex-1 rounded-xl border-border/60 focus-visible:ring-[var(--church-primary)]"
-                disabled={isLoading || !senderId}
+                disabled={isLoading || isHistoryLoading || !senderId}
                 autoComplete="off"
               />
               <Button
@@ -438,7 +504,7 @@ export default function ChurchChatbot({
             </div>
             {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
             <p className="mt-2 text-center text-[10px] text-muted-foreground">
-              Messages are sent only to the chatbot API with your stable browser sender ID.
+              Previous chat is restored from `visitors`, `chat_sessions`, and `chat_messages` using your stable browser ID.
             </p>
           </form>
         </CardContent>

@@ -1,5 +1,4 @@
-export const DEFAULT_CHATBOT_API_URL =
-  'http://localhost:8000/webhooks/rest/webhook'
+export const DEFAULT_CHATBOT_API_URL = '/api/rasa'
 
 export function getChatbotApiUrl() {
   return (
