@@ -4,6 +4,7 @@ export interface ChatMessage {
   id: string
   role: ChatRole
   text: string
+  createdAt?: string
 }
 
 export interface ChatbotRequestPayload {
@@ -21,4 +22,10 @@ export interface ChatbotResponseMessage {
     payload: string
   }>
   custom?: Record<string, unknown>
+}
+
+export interface ChatHistoryResponse {
+  sessionId: string | null
+  visitorId: string | null
+  messages: ChatMessage[]
 }
